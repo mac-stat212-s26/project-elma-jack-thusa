@@ -1,5 +1,156 @@
 ---
-title: "Proposal"
+title: "Rent & Roster: Mapping Student Housing Affordability Across the U.S."
+author: "Elma Mostic, Jack Dong, and Providence (Thusa) Thusabantu"
+date: "2026-03-26"
+format: 
+  html:
+    toc: true
+    toc-depth: 2
+    number-sections: true
 ---
 
-Your proposal go here.
+## Team Members
+
+- **Elma** – Project Coordinator & Data Curator
+- **Jack** – Technical Lead & Code Developer  
+- **Thusa** – Research Analyst & Documentation Lead
+
+---
+
+## Short Project Description
+
+This project investigates the feasibility of rental housing for college-age students (18-24 years) across U.S. states by analyzing the relationship between median rental prices and median incomes by age group. Using Zillow rental data and U.S. Census historical income tables, we will create interactive visualizations and rankings to identify which states offer the most affordable housing options for students and how housing cost burden varies by age.
+
+---
+
+## Research Questions
+
+1. **Which U.S. states are most and least affordable for college-age renters (18-24), and how does this compare to older age groups?**
+
+2. **What is the rent-to-income burden ratio for 18-24 year-olds by state, and how many states fall into "affordable" (&lt;30%), "burdened" (30-50%), or "severely burdened" (&gt;50%) categories?**
+
+3. **How has the affordability gap between younger renters (18-24) and established adults (35-44) changed over recent years, and which states show the most significant generational disparities in housing costs?**
+
+---
+
+## Reasons and Inspirations Behind Choosing the Topic
+
+- **Personal relevance:** All team members are currently students navigating housing affordability challenges
+- **Policy importance:** Student housing insecurity is a growing national issue affecting academic success and mental health
+- **Data availability:** Reliable, publicly available datasets (Zillow, Census) allow for reproducible, data-driven analysis
+- **Visual impact:** State-level comparisons create compelling maps and rankings that communicate findings effectively
+- **Actionable insights:** Results can inform prospective students, policymakers, and university administrators about regional affordability trends
+
+---
+
+## Potential Data Set
+
+| Source | Data Type | Time Period | Geographic Level | Key Variables |
+|--------|-----------|-------------|------------------|---------------|
+| **Zillow Research Data** | Rental price indices | 2015–present (monthly) | State, Metro, County, ZIP | Zillow Observed Rent Index (ZORI), median rent |
+| **U.S. Census Bureau Historical Income Tables** | Income by demographic characteristics | Annual (2000–2023) | National, State | Median income by age group (18-24, 25-34, 35-44, etc.) |
+
+**Data Integration:** We will merge Zillow state-level median rent data with Census state-level median income data by age group to calculate rent-to-income ratios and affordability categories.
+
+---
+
+## Communication Plan
+
+| Element | Details |
+|---------|---------|
+| **Primary Channel** | Google Chat/WhatsApp Chat (dedicated #student-housing-proj channel) |
+| **Secondary Channel** | Email for formal communications with instructor/preceptors |
+| **Response Time** | 24 hours during weekdays (Monday–Friday); 48 hours on weekends |
+| **Weekly Meeting** | Wednesdays, 7:00–8:00 PM (hybrid: in-person library or Zoom) |
+| **Code Collaboration** | GitHub repository with shared access; GitHub Issues for task tracking |
+| **Document Sharing** | Google Drive folder for drafts, meeting notes, and reference materials |
+
+---
+
+## Roles
+
+While all team members are expected to contribute to the project, having leads helps with accountability.
+
+| Role | Team Member | Responsibilities |
+|------|-------------|----------------|
+| **Point of Contact** | **Elma** | Primary liaison with instructor/preceptors; schedules meetings; ensures deliverables are submitted on time; communicates team needs or issues | Ensures all code follows COMP/STAT 112/212 Code Styling Guide; conducts code reviews;
+| **Technical Lead** | **Jack** | Oversees all code development; ensures code functionality; leads data cleaning, merging, and visualization creation; maintains website/Quarto project 
+| **Research and Writing Lead** | **Thusa** | Leads literature review and background research; drafts written content for website; ensures clear communication of findings; edits final documentation and presentation materials | manages GitHub repository;
+
+---
+
+## Conflict Resolution
+
+### Missed Deadline
+1. Team member notifies Chat ASAP with reason and new estimated completion time
+2. If delay affects downstream tasks, team redistributes work during next meeting
+3. If pattern emerges (2+ missed deadlines), Elma schedules 1-on-1 to discuss support needs
+4. Persistent issues escalated to instructor with team documentation
+
+### 50/50 Split Decision
+Elma has lead authority to initiate conflict resolution to ensure team progress
+1. Each side presents argument with supporting evidence
+2. Silent voting in Chat (majority wins)
+3. If still deadlocked, consult instructor/preceptor for guidance
+4. Document decision rationale in meeting notes
+
+### Code Disagreements
+Jack (Technical Lead) has lead authority on implementation; Thusa and Elma can request documented explanation
+
+### Writing/Content Disagreements
+Thusa (Writing Lead) has lead authority on narrative; technical accuracy verified by Jack and Elma
+
+---
+
+## Rough Implementation Plan
+
+All tasks below will be created as **GitHub Issues** in the project repository with labels, assignees, milestones, and due dates.
+
+### Phase 1: Setup and Data Collection
+
+| Task | Due Date | Lead | Deliverable |
+|------|----------|------|-------------|
+| Create GitHub repository and set up project structure | Week 1 (Apr 1) | Thusa | Functional repo with README, .gitignore, folders |
+| Download and clean Zillow rental data | Week 1 (Apr 3) | Elma | Cleaned CSV with state-level rent data |
+| Download and clean Census income-by-age data | Week 1 (Apr 5) | Jack | Cleaned CSV with state income by age group |
+
+### Phase 2: Data Integration and Analysis
+
+| Task | Due Date | Lead | Deliverable |
+|------|----------|------|-------------|
+| Merge datasets and calculate rent-to-income ratios | Week 2 (Apr 8) | Jack | Merged dataset with burden calculations |
+| Create state affordability rankings and categories | Week 2 (Apr 10) | Elma | Ranked list with affordability labels |
+| Generate summary statistics and initial visualizations | Week 2 (Apr 12) | Thusa | Summary tables + draft charts |
+
+### Phase 3: Visualization and Website
+
+| Task | Due Date | Lead | Deliverable |
+|------|----------|------|-------------|
+| Build interactive U.S. map (choropleth) | Week 3 (Apr 15) | Elma | Functional map showing burden by state |
+| Create age comparison visualizations (bar charts, scatter plots) | Week 3 (Apr 17) | All | Multiple visualization types |
+| Draft website content and narrative | Week 3 (Apr 19) | Thusa | Written content for all pages |
+| Assemble Quarto website with all components | Week 4 (Apr 22) | Jack | Live website with all sections |
+
+### Phase 4: Refinement and Documentation
+
+| Task | Due Date | Lead | Deliverable |
+|------|----------|------|-------------|
+| Code review and style compliance check | Week 4 (Apr 24) | Jack | All code meets style guide |
+| Write data methodology and limitations sections | Week 4 (Apr 26) | Thusa | Complete documentation |
+| Peer review and feedback incorporation | Week 5 (Apr 29) | All | Revised website and analysis |
+| Final presentation prep and rehearsal | Week 5 (May 1) | Elma | Presentation slides and talking points |
+
+### Final Deliverables
+
+| Task | Due Date | Lead | Deliverable |
+|------|----------|------|-------------|
+| Submit final website URL | May 5 | Elma | Live, complete website |
+| Submit final presentation | May 5 | Thusa | Recorded/ready presentation |
+| Complete team evaluation forms | May 7 | All | Individual evaluations submitted |
+
+---
+
+## References
+
+- Zillow Research Data. https://www.zillow.com/research/data/
+- U.S. Census Bureau Historical Income Tables. https://www.census.gov/data/tables/time-series/demo/income-poverty/historical-income-households.html
