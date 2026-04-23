@@ -1,9 +1,6 @@
-# ============================================================
-#  Rent & Roster: Student Housing Affordability EDA
-#  Author: Elma M.
-#  Data: ACS 1-Year Estimates via tidycensus API
-#        Variables: B19049 (income by age), B25064 (median rent)
-# ============================================================
+---
+title: "Elma M."
+---
 
 
 ```{r}
