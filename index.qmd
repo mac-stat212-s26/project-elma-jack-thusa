@@ -803,13 +803,13 @@ college_json <- paste0(
   "}"
 )
 
-college_list_json <- paste0(
+state_json <- paste0(
   "[",
   paste0(
     "{",
-    '"college":"', gsub('"', '\\\\"', college_tool_data$college_name), '",',
-    '"state":"', gsub('"', '\\\\"', college_tool_data$state), '",',
-    '"rent":', round(college_tool_data$median_rent_annual, 0),
+    '"state":"', gsub('"', '\\\\"', burden_2023$State), '",',
+    '"rent":', round(burden_2023$median_rent_annual, 0), ',',
+    '"burden":', round(burden_2023$burden_under25, 1),
     "}",
     collapse = ","
   ),
@@ -956,6 +956,25 @@ margin-bottom:8px;
 font-size:1.02em;
 line-height:1.65;
 }
+.go-extra-box{
+margin-top:18px;
+background:rgba(255,255,255,0.06);
+border-left:5px solid #60a5fa;
+border-radius:14px;
+padding:16px 18px;
+}
+.go-extra-title{
+font-size:0.83em;
+letter-spacing:0.06em;
+text-transform:uppercase;
+color:rgba(255,255,255,0.7);
+font-weight:800;
+margin-bottom:8px;
+}
+.go-extra-text{
+font-size:1.02em;
+line-height:1.65;
+}
 .go-alt-results{
 display:none;
 margin-top:22px;
@@ -996,13 +1015,45 @@ color:rgba(255,255,255,0.65);
 font-size:0.88em;
 line-height:1.5;
 }
+.go-move-wrap{
+margin-top:30px;
+padding-top:24px;
+border-top:1px solid rgba(255,255,255,0.12);
+}
+.go-move-title{
+font-size:1.3em;
+font-weight:900;
+margin-bottom:8px;
+}
+.go-move-subtitle{
+color:rgba(255,255,255,0.72);
+margin-bottom:18px;
+line-height:1.6;
+}
+.go-move-results{
+display:none;
+margin-top:18px;
+}
+.go-move-grid{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(210px,1fr));
+gap:14px;
+}
+.go-pill{
+display:inline-block;
+padding:4px 10px;
+border-radius:999px;
+font-size:0.78em;
+font-weight:800;
+margin-top:8px;
+}
 </style>
 
 <div class="go-college-wrap">
 <div class="go-college-title">Should I Go There?</div>
 <div class="go-college-subtitle">
 Type your annual income, choose a university, and see whether living in that state would actually be affordable for you.
-You will also get a comparison with the University of Minnesota and a list of affordable alternatives.
+You will also get a comparison with the University of Minnesota, the income needed to become affordable, and a stress test if rent rises by 10%.
 </div>
 
 <div class="go-college-grid">
@@ -1020,7 +1071,7 @@ You will also get a comparison with the University of Minnesota and a list of af
 
 <div class="go-btn-row">
 <button class="go-btn go-btn-primary" onclick="runCollegeAffordabilityTool()">Check Affordability</button>
-<button class="go-btn go-btn-secondary" onclick="findAffordableAlternatives()">Find Affordable Alternatives</button>
+<button class="go-btn go-btn-secondary" onclick="findAffordableAlternatives()">Best College Alternatives</button>
 </div>
 
 <div class="go-results" id="go-results">
@@ -1038,22 +1089,45 @@ You will also get a comparison with the University of Minnesota and a list of af
 <div class="go-compare-title">Comparison</div>
 <div class="go-compare-text" id="go-compare"></div>
 </div>
+
+<div class="go-extra-box">
+<div class="go-extra-title">Income needed</div>
+<div class="go-extra-text" id="go-income-needed"></div>
+</div>
+
+<div class="go-extra-box">
+<div class="go-extra-title">What if rent rises by 10%?</div>
+<div class="go-extra-text" id="go-rent-shock"></div>
+</div>
 </div>
 </div>
 </div>
 
 <div class="go-alt-results" id="go-alt-results">
-<div class="go-alt-title">Affordable alternatives for your income</div>
+<div class="go-alt-title">Best college alternatives for your income</div>
 <div class="go-alt-grid" id="go-alt-grid"></div>
 <div class="go-note">
-These are colleges in states where the median annual rent would keep your personal burden under 30%.
+These are the lowest-burden college options in your current list, ranked for your income.
+</div>
+</div>
+
+<div class="go-move-wrap">
+<div class="go-move-title">Where Should I Move?</div>
+<div class="go-move-subtitle">
+Enter your income and we will rank the best U.S. states for affordability based on median annual rent.
+</div>
+<div class="go-btn-row">
+<button class="go-btn go-btn-secondary" onclick="recommendStates()">Find Best States For Me</button>
+</div>
+<div class="go-move-results" id="go-move-results">
+<div class="go-move-grid" id="go-move-grid"></div>
 </div>
 </div>
 </div>
 
 <script>
 const COLLEGE_DATA = ', college_json, ';
-const COLLEGE_LIST = ', college_list_json, ';
+const STATE_DATA = ', state_json, ';
 const UMN_RENT = ', umn_rent, ';
 
 const collegeSelect = document.getElementById("go-college");
@@ -1072,13 +1146,19 @@ return "#ef4444";
 
 function burdenLabel(ratio) {
 if (ratio < 30) return "Affordable";
-if (ratio < 50) return "Burdened";
-return "Severely Burdened";
+if (ratio < 50) return "Stretch";
+return "Very hard";
 }
 
 function badgeHTML(ratio) {
 const color = burdenColor(ratio);
 return `<span class="go-badge" style="background:${color}; color:white;">${burdenLabel(ratio)}</span>`;
+}
+
+function movePill(ratio) {
+if (ratio < 30) return `<span class="go-pill" style="background:#22c55e;color:white;">Affordable</span>`;
+if (ratio < 50) return `<span class="go-pill" style="background:#f59e0b;color:white;">Stretch</span>`;
+return `<span class="go-pill" style="background:#ef4444;color:white;">Very hard</span>`;
 }
 
 function drawCollegeGauge(ratio) {
@@ -1107,6 +1187,10 @@ ${ratio.toFixed(1)}%
 </svg>`;
 }
 
+function currency(x) {
+return "$" + Math.round(x).toLocaleString();
+}
+
 function runCollegeAffordabilityTool() {
 const income = parseFloat(document.getElementById("go-income").value);
 const college = document.getElementById("go-college").value;
@@ -1117,6 +1201,8 @@ const details = document.getElementById("go-details");
 const compare = document.getElementById("go-compare");
 const gauge = document.getElementById("go-gauge");
 const badgeWrap = document.getElementById("go-badge-wrap");
+const incomeNeededBox = document.getElementById("go-income-needed");
+const rentShockBox = document.getElementById("go-rent-shock");
 
 if (!income || income <= 0 || !college) {
 results.style.display = "block";
@@ -1125,6 +1211,8 @@ details.innerHTML = "";
 compare.innerHTML = "";
 gauge.innerHTML = "";
 badgeWrap.innerHTML = "";
+incomeNeededBox.innerHTML = "";
+rentShockBox.innerHTML = "";
 return;
 }
 
@@ -1132,6 +1220,10 @@ const info = COLLEGE_DATA[college];
 const yourRatio = (info.rent / income) * 100;
 const umnRatio = (UMN_RENT / income) * 100;
 const diff = yourRatio - umnRatio;
+const neededIncome = info.rent / 0.30;
+const incomeGap = Math.max(0, neededIncome - income);
+const shockRent = info.rent * 1.10;
+const shockRatio = (shockRent / income) * 100;
 
 let verdictText = "";
 if (yourRatio < 30) {
@@ -1151,15 +1243,33 @@ compareText = `Compared with <strong>University of Minnesota</strong>, choosing 
 compareText = `<strong>${college}</strong> and <strong>University of Minnesota</strong> would create almost the same rent burden for your income: <strong>${yourRatio.toFixed(1)}%</strong> versus <strong>${umnRatio.toFixed(1)}%</strong>.`;
 }
 
+let incomeNeededText = "";
+if (incomeGap <= 0) {
+incomeNeededText = `At your current income, you already clear the affordability threshold here. To stay under 30%, you would need about <strong>${currency(neededIncome)}</strong>, and you are above that.`;
+} else {
+incomeNeededText = `To live in <strong>${info.state}</strong> without being cost-burdened, you would need about <strong>${currency(neededIncome)}</strong> per year. That is about <strong>${currency(incomeGap)}</strong> more than your current income.`;
+}
+
+let rentShockText = "";
+if (shockRatio < 30) {
+rentShockText = `If rent rose by 10%, your burden would become <strong>${shockRatio.toFixed(1)}%</strong>. You would still remain under the affordability line.`;
+} else if (shockRatio < 50) {
+rentShockText = `If rent rose by 10%, your burden would become <strong>${shockRatio.toFixed(1)}%</strong>. That would put more pressure on your budget.`;
+} else {
+rentShockText = `If rent rose by 10%, your burden would jump to <strong>${shockRatio.toFixed(1)}%</strong>. That would push this option into a very difficult range.`;
+}
+
 verdict.innerHTML = verdictText;
 details.innerHTML = `
 <strong>State:</strong> ${info.state}<br>
-<strong>Median annual rent in that state:</strong> $${info.rent.toLocaleString()}<br>
+<strong>Median annual rent in that state:</strong> ${currency(info.rent)}<br>
 <strong>Statewide under-25 burden:</strong> ${info.state_burden.toFixed(1)}%
 `;
 compare.innerHTML = compareText;
 gauge.innerHTML = drawCollegeGauge(yourRatio);
 badgeWrap.innerHTML = badgeHTML(yourRatio);
+incomeNeededBox.innerHTML = incomeNeededText;
+rentShockBox.innerHTML = rentShockText;
 results.style.display = "block";
 }
 
@@ -1175,27 +1285,18 @@ altGrid.innerHTML = `<div class="go-alt-card">Please enter your income first.</d
 return;
 }
 
-const matches = COLLEGE_LIST
-.map(d => {
-return {
-...d,
-ratio: (d.rent / income) * 100
-};
-})
-.filter(d => d.ratio < 30 && d.college !== selectedCollege)
+const matches = Object.entries(COLLEGE_DATA)
+.map(([college, info]) => ({
+college: college,
+state: info.state,
+rent: info.rent,
+ratio: (info.rent / income) * 100
+}))
+.filter(d => d.college !== selectedCollege)
 .sort((a, b) => a.ratio - b.ratio)
 .slice(0, 5);
 
 altWrap.style.display = "block";
-
-if (matches.length === 0) {
-altGrid.innerHTML = `
-<div class="go-alt-card">
-At this income level, none of the colleges in the current list fall under a 30% burden threshold.
-</div>
-`;
-return;
-}
 
 altGrid.innerHTML = matches.map(d => `
 <div class="go-alt-card">
@@ -1203,7 +1304,41 @@ altGrid.innerHTML = matches.map(d => `
 <div class="go-alt-state">${d.state}</div>
 <div class="go-alt-metric">
 <strong>Personal burden:</strong> ${d.ratio.toFixed(1)}%<br>
-<strong>Median annual rent:</strong> $${d.rent.toLocaleString()}
+<strong>Median annual rent:</strong> ${currency(d.rent)}<br>
+<strong>Category:</strong> ${burdenLabel(d.ratio)}
+</div>
+</div>
+`).join("");
+}
+
+function recommendStates() {
+const income = parseFloat(document.getElementById("go-income").value);
+const moveWrap = document.getElementById("go-move-results");
+const moveGrid = document.getElementById("go-move-grid");
+
+if (!income || income <= 0) {
+moveWrap.style.display = "block";
+moveGrid.innerHTML = `<div class="go-alt-card">Enter your income first to see the best states for you.</div>`;
+return;
+}
+
+const ranked = STATE_DATA
+.map(d => ({
+state: d.state,
+rent: d.rent,
+ratio: (d.rent / income) * 100
+}))
+.sort((a, b) => a.ratio - b.ratio)
+.slice(0, 5);
+
+moveWrap.style.display = "block";
+moveGrid.innerHTML = ranked.map(d => `
+<div class="go-alt-card">
+<div class="go-alt-college">${d.state}</div>
+<div class="go-alt-metric">
+<strong>Your burden:</strong> ${d.ratio.toFixed(1)}%<br>
+<strong>Median annual rent:</strong> ${currency(d.rent)}<br>
+${movePill(d.ratio)}
 </div>
 </div>
 `).join("");

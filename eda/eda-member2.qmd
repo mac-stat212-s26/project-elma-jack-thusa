@@ -1,7 +1,11 @@
 ---
-title: "Elma M."
+title: "Rent & Roster: Student Housing Affordability EDA"
+author: "Elma M."
+format:
+  html:
+    toc: true
+    code-fold: true
 ---
-
 
 ```{r}
 # LOAD LIBRARIES
