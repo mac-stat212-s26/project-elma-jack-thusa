@@ -655,6 +655,7 @@ ggplotly(p4, tooltip = "text") %>%
   <p style="font-size:1.2em;color:#333;line-height:1.7;">The number of states where adults aged 25-44 are cost-burdened. <strong>Not a single one.</strong> The same rents that crush young budgets are entirely manageable once income catches up.</p>
 </div>
 <div class="story-section">
+
   <div class="big-number">2x</div>
   <p style="font-size:1.2em;color:#333;line-height:1.7;">Young renters spend roughly <strong>twice as much of their income on rent</strong> as established adults. Average 33.7% for under-25 versus 17.8% for 25-44. Same apartments. Very different realities.</p>
 </div>
