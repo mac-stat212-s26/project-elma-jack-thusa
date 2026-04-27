@@ -504,7 +504,6 @@ p3
 
 ## 9. Export Results
 
-Uncomment the lines below to save the analysis dataset and figures to your working directory.
 
 ```{r}
 #| label: export
