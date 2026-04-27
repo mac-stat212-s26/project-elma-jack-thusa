@@ -1,5 +1,517 @@
 ---
-title: "Member 1 First Name & Last Name Initial"
+title: "Thusa"
+subtitle: "College-Age Renter Affordability: Early Data Exploration"
+format: 
+  html:
+    toc: true
+    toc-depth: 3
+    code-fold: false
+    fig-width: 10
+    fig-height: 8
+    embed-resources: true
+execute: 
+  warning: false
+  message: false
 ---
 
-Your exploratory data analysis of the team datasets go here.
+## 1. Overview & Research Questions
+
+This notebook explores housing affordability for college-age renters using American Community Survey (ACS) data accessed via `tidycensus`. We examine three core questions:
+
+1. **Which U.S. states are most and least affordable for college-age renters (18–24), and how does this compare to older age groups?**
+2. **What is the rent-to-income burden ratio for 18–24 year-olds by state, and how many states fall into "affordable" (\<30%), "burdened" (30–50%), or "severely burdened" (\>50%) categories?**
+3. **How has the affordability gap between younger renters (18–24) and established adults (35–44) changed over recent years, and which states show the most significant generational disparities in housing costs?**
+
+### Data Sources & Important Caveats
+
+- **ACS Table B19049**: Median household income by age of householder.
+- **ACS Table B25064**: Median gross rent (dollars).
+- **Age Proxies**: ACS uses brackets 15–24, 25–44, 45–64, and 65+. We use **15–24** as the closest available proxy for the college-age (18–24) cohort and **25–44** as the proxy for established adults (35–44).
+- **Householder vs. Individual**: These tables report income for the *householder* (the person who owns or rents the home). College students living in dorms or with parents are typically not householders and are therefore not captured in these household-level estimates. This is a standard limitation of Census household data for college-age affordability research.
+
+---
+
+## 2. Setup & Configuration
+
+```{r}
+#| label: setup
+#| echo: true
+
+library(tidycensus)
+library(tidyverse)
+library(scales)
+
+# Census API Key
+
+census_api_key("d6ea3b74acd33e1a166357b8af8134055725a821", install = TRUE, overwrite = TRUE)
+
+# Analysis Parameters 
+YEARS       <- 2010:2023                   # Years to analyze
+SURVEY      <- "acs5"                      # "acs1" (1-year) or "acs5" (5-year)
+STATE_FIPS  <- NULL                        # NULL = all states + DC
+
+# HUD affordability thresholds
+THRESH_AFFORDABLE <- 30
+THRESH_BURDENED   <- 50
+```
+
+---
+
+## 3. Data Ingestion
+
+We pull state-level ACS estimates for median household income by age of householder (B19049) and median gross rent (B25064).
+
+```{r}
+#| label: define-variables
+
+# B19049: Median Household Income by Age of Householder
+income_vars <- c(
+  medinc_total   = "B19049_001",  # All ages
+  medinc_15_24   = "B19049_002",  # Householder 15 to 24 years
+  medinc_25_44   = "B19049_003",  # Householder 25 to 44 years
+  medinc_45_64   = "B19049_004",  # Householder 45 to 64 years
+  medinc_65_plus = "B19049_005"   # Householder 65 years and over
+)
+
+# B25064: Median Gross Rent (monthly dollars)
+rent_vars <- c(med_rent = "B25064_001")
+
+# head(income_vars)
+```
+
+
+```{r}
+#| label: pull-data
+#| message: true
+
+pull_state_data <- function(year, survey = "acs5") {
+  
+  message("Pulling data for ", year, " ...")
+  
+  # Income data (wide format)
+  income_df <- get_acs(
+    geography = "state",
+    variables = income_vars,
+    year = year,
+    survey = survey,
+    output = "wide",
+    state = STATE_FIPS
+  ) %>%
+    mutate(year = year)
+  
+  # Rent data — same fix applied
+  rent_df <- get_acs(
+    geography = "state",
+    variables = rent_vars,
+    year = year,
+    survey = survey,
+    output = "wide",
+    state = STATE_FIPS
+  ) %>%
+    mutate(year = year)
+  
+  # Merge
+  full_df <- income_df %>%
+    left_join(rent_df, by = c("GEOID", "NAME", "year"))
+  
+  return(full_df)
+}
+
+# Pull all years and combine
+raw_data <- map_dfr(YEARS, ~ pull_state_data(.x, SURVEY))
+#names(raw_data)
+```
+
+```{r}
+#| label: clean-and-validate
+#| echo: true
+
+# Inspect structure
+glimpse(raw_data)
+
+# Check column names
+print(names(raw_data))
+
+# Clean and standardize
+clean_data <- raw_data %>%
+  rename(state = NAME) %>%
+  mutate(
+    across(
+      c(med_rentE, starts_with("medinc")),
+      as.numeric
+    )
+  )
+
+# Check missing values
+missing_summary <- clean_data %>%
+  summarise(
+    across(
+      c(med_rentE, starts_with("medinc")),
+      ~ sum(is.na(.))
+    )
+  )
+
+print(missing_summary)
+
+# Filter out problematic rows
+clean_data <- clean_data %>%
+  filter(
+    !is.na(med_rentE),
+    !is.na(medinc_15_24E),
+    medinc_15_24E > 0
+  )
+
+# Final sanity check
+clean_data %>%
+  select(state, year, med_rentE, medinc_15_24E) %>%
+  head(10)
+```
+
+---
+
+## 4. Calculate Burden Metrics
+
+We annualize rent (ACS reports monthly rent; income is annual), compute rent-to-income ratios for each age bracket, assign HUD burden categories, and calculate the generational affordability gap.
+
+```{r}
+#| label: calculate-metrics
+#| echo: true
+
+analysis_df <- clean_data %>%
+  mutate(
+    # Annualize rent
+    annual_rent = med_rentE * 12,
+    
+    # Rent-to-income ratios (%)
+    rtb_15_24 = (annual_rent / medinc_15_24E) * 100,
+    rtb_25_44 = (annual_rent / medinc_25_44E) * 100,
+    
+    # Affordability categories (young renters)
+    burden_cat_young = case_when(
+      rtb_15_24 < THRESH_AFFORDABLE ~ "Affordable (<30%)",
+      rtb_15_24 <= THRESH_BURDENED  ~ "Burdened (30-50%)",
+      TRUE                          ~ "Severely Burdened (>50%)"
+    ) %>% factor(levels = c(
+      "Affordable (<30%)", 
+      "Burdened (30-50%)", 
+      "Severely Burdened (>50%)"
+    )),
+    
+    # Affordability categories (older group)
+    burden_cat_established = case_when(
+      rtb_25_44 < THRESH_AFFORDABLE ~ "Affordable (<30%)",
+      rtb_25_44 <= THRESH_BURDENED  ~ "Burdened (30-50%)",
+      TRUE                          ~ "Severely Burdened (>50%)"
+    ) %>% factor(levels = c(
+      "Affordable (<30%)", 
+      "Burdened (30-50%)", 
+      "Severely Burdened (>50%)"
+    )),
+    
+    # Generational gap
+    affordability_gap = rtb_15_24 - rtb_25_44
+  )
+
+# Quick Check
+analysis_df %>%
+  select(state, year, rtb_15_24, rtb_25_44) %>%
+  head(10)
+```
+
+---
+
+## 5. Q1: Most & Least Affordable States for Young Renters
+
+We rank states by the rent-to-income burden for the 15–24 age bracket (our proxy for 18–24) using the most recent year of data.
+
+```{r}
+#| label: q1-rankings
+#| echo: true
+
+latest_year <- max(analysis_df$year)
+
+q1_rankings <- analysis_df %>%
+  filter(year == latest_year) %>%
+  select(
+    state,
+    rtb_15_24,
+    rtb_25_44,
+    affordability_gap,
+    med_rentE
+  ) %>%
+  arrange(rtb_15_24)
+```
+
+### Most Affordable (Lowest Burden)
+
+```{r}
+#| label: q1-most-affordable
+
+head(q1_rankings, 10)
+```
+
+### Least Affordable (Highest Burden)
+
+```{r}
+#| label: q1-least-affordable
+
+tail(q1_rankings, 10)
+```
+
+---
+
+## 6. Q2: Burden Categories for 18–24 Year-Olds
+
+We classify each state into HUD affordability categories based on the young renter burden ratio and tally the results.
+
+### Summary Counts
+
+```{r}
+#| label: q2-summary
+
+q2_summary <- analysis_df %>%
+  filter(year == latest_year) %>%
+  count(burden_cat_young, name = "num_states") %>%
+  mutate(pct_states = round((num_states / sum(num_states)) * 100, 1))
+
+q2_summary
+```
+
+### States by Category
+
+```{r}
+#| label: q2-by-state
+
+q2_by_state <- analysis_df %>%
+  filter(year == latest_year) %>%
+  select(state, rtb_15_24, burden_cat_young) %>%
+  arrange(burden_cat_young, desc(rtb_15_24))
+
+q2_by_state
+```
+
+---
+
+## 7. Q3: Trends & Generational Disparities
+
+If multiple years are selected, we examine how the national affordability gap has evolved and identify states with the largest disparities.
+
+### National Gap Trend
+
+```{r}
+#| label: q3-gap-trend
+#| echo: true
+
+gap_trend <- analysis_df %>%
+  group_by(year) %>%
+  summarise(
+    mean_gap   = mean(affordability_gap, na.rm = TRUE),
+    median_gap = median(affordability_gap, na.rm = TRUE),
+    max_gap    = max(affordability_gap, na.rm = TRUE),
+    min_gap    = min(affordability_gap, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+gap_trend
+```
+
+### States with Largest Generational Gaps (Most Recent Year)
+
+```{r}
+#| label: q3-largest-gaps
+#| eval: !expr length(YEARS) > 1
+
+largest_gaps <- analysis_df %>%
+  filter(year == latest_year) %>%
+  arrange(desc(affordability_gap)) %>%
+  select(
+    state = state, 
+    affordability_gap, 
+    rtb_15_24, 
+    rtb_25_44, 
+    med_rentE
+  ) %>%
+  head(10)
+
+largest_gaps
+```
+
+### States Where the Gap Has Widened Most
+
+```{r}
+#| label: q3-gap-change
+#| eval: !expr length(YEARS) > 1
+
+gap_change <- analysis_df %>%
+  select(year, state = state, affordability_gap) %>%
+  filter(year %in% c(min(YEARS), max(YEARS))) %>%
+  pivot_wider(
+    names_from = year, 
+    values_from = affordability_gap, 
+    names_prefix = "yr_"
+  ) %>%
+  mutate(
+    gap_change = !!sym(paste0("yr_", max(YEARS))) - !!sym(paste0("yr_", min(YEARS)))
+  ) %>%
+  arrange(desc(gap_change))
+
+head(gap_change, 10)
+```
+
+---
+
+## 8. Visualizations
+
+### Burden by State (Ranked Bar Chart)
+
+```{r}
+#| label: fig-burden-ranking
+#| fig-cap: "Rent-to-income burden for young renters (15–24) by state. Dashed lines show the 30% and 50% HUD thresholds."
+
+p1 <- analysis_df %>%
+  filter(year == latest_year) %>%
+  mutate(state = fct_reorder(state, rtb_15_24)) %>%
+  ggplot(aes(x = rtb_15_24, y = state, fill = burden_cat_young)) +
+  geom_col(width = 0.7) +
+  geom_vline(
+    xintercept = THRESH_AFFORDABLE, 
+    linetype = "dashed", 
+    color = "darkorange", 
+    linewidth = 0.8
+  ) +
+  geom_vline(
+    xintercept = THRESH_BURDENED, 
+    linetype = "dashed", 
+    color = "firebrick", 
+    linewidth = 0.8
+  ) +
+  scale_fill_manual(values = c(
+    "Affordable (<30%)"        = "#2ca02c",
+    "Burdened (30-50%)"        = "#ff7f0e",
+    "Severely Burdened (>50%)" = "#d62728"
+  )) +
+  scale_x_continuous(
+    labels = percent_format(scale = 1), 
+    expand = c(0, 0)
+  ) +
+  labs(
+    title    = paste(
+      "Rent-to-Income Burden for Young Renters by State (", 
+      latest_year, 
+      ")", 
+      sep = ""
+    ),
+    subtitle = "Young renters = householders aged 15–24 (proxy for 18–24 college-age cohort)",
+    x        = "Rent-to-Income Ratio (%)",
+    y        = NULL,
+    fill     = "Affordability Category",
+    caption  = paste(
+      "Data: ACS", 
+      ifelse(SURVEY == "acs1", "1-Year", "5-Year"), 
+      "Estimates via tidycensus.\nRed line = 50% (severely burdened); Orange line = 30% (burdened threshold)."
+    )
+  ) +
+  theme_minimal(base_size = 11) +
+  theme(
+    legend.position      = "bottom",
+    panel.grid.major.y   = element_blank(),
+    panel.grid.minor     = element_blank()
+  )
+
+p1
+```
+
+### Young vs. Established Adults: Scatter Comparison
+
+```{r}
+#| label: fig-scatter-comparison
+#| fig-cap: "Comparison of rent burden between young renters (15–24) and established adults (25–44). Points above the diagonal indicate worse affordability for younger renters."
+
+p2 <- analysis_df %>%
+  filter(year == latest_year) %>%
+  ggplot(aes(x = rtb_25_44, y = rtb_15_24)) +
+  geom_abline(
+    slope = 1, 
+    intercept = 0, 
+    linetype = "dashed", 
+    color = "gray60"
+  ) +
+  geom_point(
+    aes(size = med_rentE, color = affordability_gap), 
+    alpha = 0.85
+  ) +
+  geom_text(
+    aes(label = state), 
+    check_overlap = TRUE, 
+    size = 2.8, 
+    vjust = -0.8, 
+    fontface = "bold"
+  ) +
+  scale_color_gradient2(
+    low      = "steelblue",
+    mid      = "white",
+    high     = "firebrick",
+    midpoint = 0,
+    name     = "Gap (pp)"
+  ) +
+  scale_size_continuous(
+    range = c(2, 8), 
+    name = "Median Rent ($)"
+  ) +
+  labs(
+    title    = "Young Renters vs. Established Adults: Rent Burden by State",
+    subtitle = paste(
+      "Above diagonal = worse for young renters (", 
+      latest_year, 
+      ")", 
+      sep = ""
+    ),
+    x        = "Rent-to-Income Ratio: 25–44 years (%)",
+    y        = "Rent-to-Income Ratio: 15–24 years (%)",
+    caption  = "Diagonal line indicates equal burden. Points above = generational disparity favoring older renters."
+  ) +
+  theme_minimal(base_size = 11) +
+  theme(legend.position = "right")
+
+p2
+```
+
+### National Gap Trend Over Time
+
+```{r}
+#| label: fig-gap-trend
+#| fig-cap: "National trend in the mean affordability gap between young and established renters."
+#| eval: !expr length(YEARS) > 1
+
+p3 <- gap_trend %>%
+  ggplot(aes(x = year, y = mean_gap)) +
+  geom_line(color = "steelblue", linewidth = 1.2) +
+  geom_point(size = 3, color = "steelblue") +
+  geom_hline(yintercept = 0, linetype = "dotted", color = "gray50") +
+  labs(
+    title    = "National Trend: Affordability Gap Between Young and Established Renters",
+    subtitle = "Mean difference in rent-to-income burden (15–24 minus 25–44)",
+    x        = "Year",
+    y        = "Mean Gap (percentage points)",
+    caption  = "Positive values indicate younger renters face a higher housing cost burden."
+  ) +
+  theme_minimal(base_size = 11)
+
+p3
+```
+
+---
+
+## 9. Export Results
+
+
+```{r}
+#| label: export
+#| eval: false
+
+write_csv(analysis_df, "state_rent_burden_analysis.csv")
+ggsave("burden_by_state.png", p1, width = 10, height = 12, dpi = 300)
+ggsave("young_vs_established_scatter.png", p2, width = 10, height = 8, dpi = 300)
+if (exists("p3")) ggsave("gap_trend.png", p3, width = 10, height = 6, dpi = 300)
+```
+

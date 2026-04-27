@@ -1,5 +1,487 @@
 ---
-title: "Member 2 First Name & Last Name Initial"
+title: "Rent & Roster: Student Housing Affordability EDA"
+author: "Elma M."
+format:
+  html:
+    toc: true
+    code-fold: true
 ---
 
-Your exploratory data analysis of the team datasets go here.
+```{r}
+# LOAD LIBRARIES
+library(readr)        # reading CSV files
+library(dplyr)        # data wrangling
+library(tidyr)        # reshaping data
+library(purrr)        # looping with map_dfr
+library(janitor)      # clean_names, tabyl
+library(DataExplorer) # introduce(), plot_missing()
+library(tidycensus)   # pulling Census ACS data
+library(ggplot2)      # plotting
+library(ggrepel)      # non-overlapping labels on scatter plot
+library(forcats)      # reordering factors in plots
+library(scales)       # formatting axis labels
+ 
+# Load my Census API key (saved from earlier setup)
+readRenviron("~/.Renviron")
+ 
+# Create output folder for saved figures
+dir.create("figures", showWarnings = FALSE)
+```
+
+```{r}
+# LOAD & CLEAN HOUSEHOLD INCOME DATA
+# Source: Census Bureau Historical Income Table H-8
+# This gives us median household income by state, 1984-2024
+ 
+raw_data <- read_csv(
+  "../data/raw/Median Household Income by State 1984 to 2024.csv",
+  skip = 7,
+  col_names = FALSE,
+  show_col_types = FALSE
+)
+ 
+# Extract year and column type rows
+year_row <- as.character(unlist(raw_data[1, ]))
+type_row <- as.character(unlist(raw_data[2, ]))
+ 
+# Keep only "Median income" columns + State column
+state_col   <- 1
+median_cols <- which(type_row == "Median income")
+ 
+Household_median <- raw_data[-c(1, 2), c(state_col, median_cols)]
+ 
+# Rename columns to year labels
+income_years <- year_row[median_cols]
+colnames(Household_median) <- c("State", income_years)
+ 
+# Convert income columns to numeric
+Household_median <- Household_median %>%
+  mutate(across(-State, ~ as.numeric(gsub(",", "", .))))
+ 
+# Clean up state names and rows
+Household_median$State[1] <- "United States (Median average)"
+Household_median <- Household_median[1:52, ]
+Household_median <- Household_median %>%
+  select(-matches("\\((39|40)\\)$"))
+colnames(Household_median) <- gsub("\\s*\\(.*\\)", "", colnames(Household_median))
+ 
+cat("Income data loaded:", nrow(Household_median), "states,",
+    ncol(Household_median) - 1, "years\n")
+```
+```{r}
+# PULL ACS RENT + AGE-SPECIFIC INCOME DATA
+# Source: American Community Survey 1-Year Estimates
+# B19049 = Median household income by age of householder
+# B25064 = Median gross rent
+# Note: 2020 ACS 1-year was NOT released due to COVID
+ 
+years <- c(2015, 2016, 2017, 2018, 2019, 2021, 2022, 2023)
+ 
+cat("Pulling ACS income by age data (this takes ~30 seconds)...\n")
+income_by_age_raw <- map_dfr(years, function(yr) {
+  get_acs(
+    geography = "state",
+    variables = c(
+      "under25"  = "B19049_002",  # householders under 25
+      "age25_44" = "B19049_003"   # householders 25-44 (comparison)
+    ),
+    year   = yr,
+    survey = "acs1"
+  ) %>%
+    mutate(year = yr)
+})
+ 
+cat("Pulling ACS median gross rent data...\n")
+rent_raw <- map_dfr(years, function(yr) {
+  get_acs(
+    geography = "state",
+    variables = "B25064_001",
+    year   = yr,
+    survey = "acs1"
+  ) %>%
+    mutate(year = yr)
+})
+ 
+cat("ACS data pulled successfully!\n")
+```
+```{r}
+# BUILD 2023 BURDEN DATASET
+# Rent burden = annual rent / annual income * 100
+# Standard thresholds:
+#   < 30% = affordable
+#   30-50% = burdened
+#   > 50% = severely burdened
+ 
+# 2023 income by age group
+income_2023 <- income_by_age_raw %>%
+  filter(year == 2023) %>%
+  select(State = NAME, variable, estimate) %>%
+  pivot_wider(names_from = variable, values_from = estimate) %>%
+  rename(
+    income_under25 = under25,
+    income_25_44   = age25_44
+  )
+ 
+# 2023 annual rent (monthly * 12)
+rent_2023 <- rent_raw %>%
+  filter(year == 2023) %>%
+  select(State = NAME, median_rent_monthly = estimate) %>%
+  mutate(median_rent_annual = median_rent_monthly * 12)
+ 
+# Merge and calculate burden ratios
+burden_2023 <- income_2023 %>%
+  inner_join(rent_2023, by = "State") %>%
+  filter(State != "Puerto Rico") %>%
+  mutate(
+    # Under-25 burden
+    burden_under25 = (median_rent_annual / income_under25) * 100,
+    burden_cat_under25 = case_when(
+      burden_under25 < 30  ~ "Affordable (<30%)",
+      burden_under25 < 50  ~ "Burdened (30-50%)",
+      burden_under25 >= 50 ~ "Severely Burdened (>50%)"
+    ),
+    burden_cat_under25 = factor(burden_cat_under25,
+      levels = c("Affordable (<30%)", "Burdened (30-50%)",
+                 "Severely Burdened (>50%)")),
+ 
+    # 25-44 burden (comparison group)
+    burden_25_44 = (median_rent_annual / income_25_44) * 100,
+    burden_cat_25_44 = case_when(
+      burden_25_44 < 30  ~ "Affordable (<30%)",
+      burden_25_44 < 50  ~ "Burdened (30-50%)",
+      burden_25_44 >= 50 ~ "Severely Burdened (>50%)"
+    ),
+    burden_cat_25_44 = factor(burden_cat_25_44,
+      levels = c("Affordable (<30%)", "Burdened (30-50%)",
+                 "Severely Burdened (>50%)"))
+  ) %>%
+  arrange(desc(burden_under25))
+ 
+cat("Burden dataset built:", nrow(burden_2023), "states\n\n")
+```
+
+```{r}
+# QUICK DATA OVERVIEW
+cat("=== DATASET OVERVIEW ===\n")
+introduce(burden_2023)
+plot_missing(burden_2023)
+ 
+cat("\n=== SUMMARY STATISTICS ===\n")
+burden_2023 %>%
+  summarise(
+    mean_burden_under25   = round(mean(burden_under25, na.rm = TRUE), 1),
+    median_burden_under25 = round(median(burden_under25, na.rm = TRUE), 1),
+    min_burden_under25    = round(min(burden_under25, na.rm = TRUE), 1),
+    max_burden_under25    = round(max(burden_under25, na.rm = TRUE), 1),
+    mean_burden_25_44     = round(mean(burden_25_44, na.rm = TRUE), 1),
+    median_burden_25_44   = round(median(burden_25_44, na.rm = TRUE), 1)
+  ) %>%
+  print()
+ 
+cat("\n=== BURDEN CATEGORY COUNTS (Under 25) ===\n")
+burden_2023 %>% count(burden_cat_under25) %>% print()
+ 
+cat("\n=== BURDEN CATEGORY COUNTS (Ages 25-44) ===\n")
+burden_2023 %>% count(burden_cat_25_44) %>% print()
+ 
+```
+```{r}
+# DEFINE SHARED THEME AND COLORS
+ 
+COLORS <- c(
+  "Affordable (<30%)"        = "#27ae60",
+  "Burdened (30-50%)"        = "#e67e22",
+  "Severely Burdened (>50%)" = "#c0392b"
+)
+ 
+theme_rentburden <- function() {
+  theme_minimal(base_size = 13) +
+    theme(
+      plot.title       = element_text(face = "bold", size = 16,
+                                      color = "#1a1a2e",
+                                      margin = margin(b = 6)),
+      plot.subtitle    = element_text(size = 11, color = "#555577",
+                                      margin = margin(b = 14)),
+      plot.caption     = element_text(size = 9, color = "#888899",
+                                      hjust = 0, margin = margin(t = 10)),
+      axis.title       = element_text(size = 11, color = "#333355"),
+      axis.text        = element_text(size = 10, color = "#444466"),
+      panel.grid.major = element_line(color = "#e8e8f0", linewidth = 0.5),
+      panel.grid.minor = element_blank(),
+      legend.position  = "top",
+      legend.title     = element_text(face = "bold", size = 10),
+      legend.text      = element_text(size = 10),
+      plot.background  = element_rect(fill = "#fafafa", color = NA),
+      panel.background = element_rect(fill = "#fafafa", color = NA),
+      plot.margin      = margin(16, 20, 12, 16)
+    )
+}
+```
+```{r}
+# PLOT 1: DISTRIBUTION OF UNDER-25 BURDEN RATIOS
+p1 <- ggplot(burden_2023,
+             aes(x = burden_under25, fill = burden_cat_under25)) +
+  geom_histogram(bins = 18, color = "white", linewidth = 0.4, alpha = 0.92) +
+  geom_vline(xintercept = 30, linetype = "dashed",
+             color = "#1a1a2e", linewidth = 0.8) +
+  geom_vline(xintercept = 50, linetype = "dashed",
+             color = "#1a1a2e", linewidth = 0.8) +
+  annotate("text", x = 31, y = 9.5, label = "30% threshold",
+           hjust = 0, size = 3.2, color = "#1a1a2e", fontface = "italic") +
+  annotate("text", x = 51, y = 9.5, label = "50% threshold",
+           hjust = 0, size = 3.2, color = "#1a1a2e", fontface = "italic") +
+  scale_fill_manual(values = COLORS, name = "Burden Category") +
+  scale_x_continuous(labels = label_percent(scale = 1)) +
+  labs(
+    title   = "How Burdened Are Young Renters Across the U.S.?",
+    subtitle = "Distribution of rent burden ratios for under-25 householders by state (2023)",
+    x       = "Rent Burden Ratio (annual rent divided by income)",
+    y       = "Number of States",
+    caption = "Source: ACS 1-Year Estimates (B19049, B25064), 2023 | Excludes Puerto Rico"
+  ) +
+  theme_rentburden()
+ 
+ggsave("figures/plot1_distribution.png", p1,
+       width = 10, height = 6, dpi = 200, bg = "#fafafa")
+print(p1)
+cat("Plot 1 saved!\n")
+```
+
+```{r}
+# PLOT 2: TOP 10 LEAST AFFORDABLE STATES
+least_affordable <- burden_2023 %>% slice_head(n = 10)
+ 
+p2 <- ggplot(least_affordable,
+             aes(x = fct_reorder(State, burden_under25),
+                 y = burden_under25,
+                 fill = burden_cat_under25)) +
+  geom_col(width = 0.7, alpha = 0.92) +
+  geom_text(aes(label = paste0(round(burden_under25, 1), "%")),
+            hjust = -0.15, size = 3.5, fontface = "bold",
+            color = "#1a1a2e") +
+  coord_flip(clip = "off") +
+  scale_fill_manual(values = COLORS, name = "Burden Category") +
+  scale_y_continuous(
+    limits = c(0, 58),
+    labels = label_percent(scale = 1)
+  ) +
+  labs(
+    title    = "Top 10 Least Affordable States for Young Renters",
+    subtitle = "States where under-25 householders face the highest rent burden (2023)",
+    x        = NULL,
+    y        = "Rent Burden Ratio (%)",
+    caption  = "Source: ACS 1-Year Estimates (B19049, B25064), 2023"
+  ) +
+  theme_rentburden() +
+  theme(legend.position = "none")
+ 
+ggsave("figures/plot2_least_affordable.png", p2,
+       width = 10, height = 6, dpi = 200, bg = "#fafafa")
+print(p2)
+cat("Plot 2 saved!\n")
+```
+```{r}
+# PLOT 3: TOP 10 MOST AFFORDABLE STATES
+most_affordable <- burden_2023 %>% slice_tail(n = 10)
+ 
+p3 <- ggplot(most_affordable,
+             aes(x = fct_reorder(State, burden_under25),
+                 y = burden_under25,
+                 fill = burden_cat_under25)) +
+  geom_col(width = 0.7, alpha = 0.92) +
+  geom_text(aes(label = paste0(round(burden_under25, 1), "%")),
+            hjust = -0.15, size = 3.5, fontface = "bold",
+            color = "#1a1a2e") +
+  coord_flip(clip = "off") +
+  scale_fill_manual(values = COLORS, name = "Burden Category") +
+  scale_y_continuous(
+    limits = c(0, 35),
+    labels = label_percent(scale = 1)
+  ) +
+  labs(
+    title    = "Top 10 Most Affordable States for Young Renters",
+    subtitle = "States where under-25 householders face the lowest rent burden (2023)",
+    x        = NULL,
+    y        = "Rent Burden Ratio (%)",
+    caption  = "Source: ACS 1-Year Estimates (B19049, B25064), 2023"
+  ) +
+  theme_rentburden() +
+  theme(legend.position = "none")
+ 
+ggsave("figures/plot3_most_affordable.png", p3,
+       width = 10, height = 6, dpi = 200, bg = "#fafafa")
+print(p3)
+cat("Plot 3 saved!\n")
+```
+
+```{r}
+# PLOT 4: GENERATIONAL GAP COMPARISON
+burden_long <- burden_2023 %>%
+  select(State, burden_under25, burden_25_44) %>%
+  pivot_longer(
+    cols      = c(burden_under25, burden_25_44),
+    names_to  = "age_group",
+    values_to = "burden_ratio"
+  ) %>%
+  mutate(age_group = recode(age_group,
+    "burden_under25" = "Under 25 (college-age)",
+    "burden_25_44"   = "Ages 25-44 (established adults)"
+  ))
+ 
+p4 <- ggplot(burden_long,
+             aes(x = burden_ratio, fill = age_group)) +
+  geom_histogram(
+    bins      = 20,
+    color     = "white",
+    linewidth = 0.3,
+    alpha     = 0.80,
+    position  = "identity"
+  ) +
+  geom_vline(xintercept = 30, linetype = "dashed",
+             color = "#1a1a2e", linewidth = 0.9) +
+  geom_vline(xintercept = 50, linetype = "dashed",
+             color = "#c0392b", linewidth = 0.9) +
+  annotate("rect", xmin = 30, xmax = 50, ymin = 0, ymax = Inf,
+           alpha = 0.04, fill = "#e67e22") +
+  annotate("rect", xmin = 50, xmax = Inf, ymin = 0, ymax = Inf,
+           alpha = 0.06, fill = "#c0392b") +
+  annotate("text", x = 31, y = 14, label = "Burdened zone",
+           hjust = 0, size = 3, color = "#e67e22", fontface = "italic") +
+  annotate("text", x = 51, y = 14, label = "Severely\nburdened",
+           hjust = 0, size = 3, color = "#c0392b", fontface = "italic") +
+  scale_fill_manual(
+    values = c(
+      "Under 25 (college-age)"          = "#e74c3c",
+      "Ages 25-44 (established adults)" = "#3498db"
+    ),
+    name = "Age Group"
+  ) +
+  scale_x_continuous(labels = label_percent(scale = 1)) +
+  labs(
+    title    = "The Generational Housing Gap",
+    subtitle = "Young renters face dramatically higher rent burden than established adults (2023)",
+    x        = "Rent Burden Ratio (annual rent divided by income)",
+    y        = "Number of States",
+    caption  = "Source: ACS 1-Year Estimates (B19049, B25064), 2023 | 30% = standard affordability threshold"
+  ) +
+  theme_rentburden()
+ 
+ggsave("figures/plot4_generational_gap.png", p4,
+       width = 10, height = 6, dpi = 200, bg = "#fafafa")
+print(p4)
+cat("Plot 4 saved!\n")
+```
+```{r}
+# PLOT 5: ALL STATES RANKED
+p5 <- ggplot(burden_2023,
+             aes(x = fct_reorder(State, burden_under25),
+                 y = burden_under25,
+                 fill = burden_cat_under25)) +
+  geom_col(width = 0.75, alpha = 0.90) +
+  geom_hline(yintercept = 30, linetype = "dashed",
+             color = "#1a1a2e", linewidth = 0.7) +
+  geom_hline(yintercept = 50, linetype = "dashed",
+             color = "#c0392b", linewidth = 0.7) +
+  annotate("text", x = 3, y = 31, label = "30% threshold",
+           hjust = 0, size = 3, color = "#1a1a2e", fontface = "italic") +
+  annotate("text", x = 3, y = 51, label = "50% threshold",
+           hjust = 0, size = 3, color = "#c0392b", fontface = "italic") +
+  coord_flip() +
+  scale_fill_manual(values = COLORS, name = "Burden Category") +
+  scale_y_continuous(labels = label_percent(scale = 1)) +
+  labs(
+    title    = "Rent Burden for Under-25 Renters: All 50 States + D.C.",
+    subtitle = "Ranked from most to least affordable (2023)",
+    x        = NULL,
+    y        = "Rent Burden Ratio (%)",
+    caption  = "Source: ACS 1-Year Estimates (B19049, B25064), 2023"
+  ) +
+  theme_rentburden() +
+  theme(
+    axis.text.y     = element_text(size = 9, color = "#333355"),
+    legend.position = "top",
+    plot.margin     = margin(16, 30, 12, 16)
+  )
+ 
+# Must save tall so all 51 state labels fit cleanly
+ggsave("figures/plot5_all_states.png", p5,
+       width = 9, height = 16, dpi = 200, bg = "#fafafa")
+print(p5)
+cat("Plot 5 saved!\n")
+```
+
+```{r}
+# PLOT 6: INCOME VS RENT SCATTERPLOT
+p6 <- ggplot(burden_2023,
+             aes(x = income_under25,
+                 y = median_rent_annual,
+                 color = burden_cat_under25,
+                 label = State)) +
+  geom_abline(slope = 0.30, intercept = 0,
+              linetype = "dashed", color = "#27ae60", linewidth = 0.8) +
+  geom_abline(slope = 0.50, intercept = 0,
+              linetype = "dashed", color = "#c0392b", linewidth = 0.8) +
+  geom_point(size = 3, alpha = 0.85) +
+  geom_text_repel(
+    data = burden_2023 %>%
+      filter(burden_under25 > 40 | burden_under25 < 26),
+    size          = 2.8,
+    color         = "#333355",
+    max.overlaps  = 15,
+    segment.color = "#ccccdd"
+  ) +
+  scale_color_manual(values = COLORS, name = "Burden Category") +
+  scale_x_continuous(labels = label_dollar(scale = 1)) +
+  scale_y_continuous(labels = label_dollar(scale = 1)) +
+  annotate("text", x = 58000, y = 58000 * 0.30 + 500,
+           label = "30% burden line", size = 3,
+           color = "#27ae60", angle = 20, fontface = "italic") +
+  annotate("text", x = 43000, y = 43000 * 0.50 + 500,
+           label = "50% burden line", size = 3,
+           color = "#c0392b", angle = 30, fontface = "italic") +
+  labs(
+    title    = "Income vs. Rent: What Is Driving Burden for Young Renters?",
+    subtitle = "Each dot = one state. Points above the dashed lines are cost-burdened.",
+    x        = "Median Annual Income (Under-25 Householders)",
+    y        = "Median Annual Rent",
+    caption  = "Source: ACS 1-Year Estimates (B19049, B25064), 2023"
+  ) +
+  theme_rentburden()
+ 
+ggsave("figures/plot6_scatter.png", p6,
+       width = 10, height = 7, dpi = 200, bg = "#fafafa")
+print(p6)
+cat("Plot 6 saved!\n")
+```
+```{r}
+# FINAL SUMMARY TABLE
+cat("\n========================================\n")
+cat("   FULL RANKED TABLE: ALL STATES (2023)\n")
+cat("========================================\n")
+ 
+burden_2023 %>%
+  select(
+    State,
+    `Income (Under 25)`  = income_under25,
+    `Annual Rent`        = median_rent_annual,
+    `Burden Ratio (%)`   = burden_under25,
+    `Category`           = burden_cat_under25
+  ) %>%
+  mutate(
+    `Income (Under 25)` = dollar(`Income (Under 25)`),
+    `Annual Rent`       = dollar(`Annual Rent`),
+    `Burden Ratio (%)` = paste0(round(`Burden Ratio (%)`, 1), "%")
+  ) %>%
+  print(n = 51)
+ 
+cat("\n========================================\n")
+cat("EDA complete! All 6 plots saved to figures/\n")
+cat("  figures/plot1_distribution.png\n")
+cat("  figures/plot2_least_affordable.png\n")
+cat("  figures/plot3_most_affordable.png\n")
+cat("  figures/plot4_generational_gap.png\n")
+cat("  figures/plot5_all_states.png\n")
+cat("  figures/plot6_scatter.png\n")
+cat("========================================\n")
+```
+
