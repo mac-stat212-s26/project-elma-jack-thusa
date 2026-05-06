@@ -1,14 +1,11 @@
 ---
 title: "Rent & Roster"
 subtitle: "Can college-age renters actually afford to live in the U.S.?"
-
 author:
   - "Elma M."
-  - "Jack D"
-  - "Partner 2"
-
+  - "Jack D."
+  - "Thusa"
 date: today
-
 format:
   html:
     page-layout: full
@@ -103,25 +100,58 @@ burden_2023 <- income_2023 %>%
 
 ```{=html}
 <style>
+* { box-sizing: border-box; }
 .hero {
   background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
   color: white; padding: 80px 40px; text-align: center;
   margin: -20px -20px 40px -20px; border-radius: 0 0 20px 20px;
+  position: relative; overflow: hidden;
 }
-.hero h1 { font-size: 3.5em; font-weight: 900; margin: 0 0 10px 0; letter-spacing: -1px; }
-.hero p { font-size: 1.3em; opacity: 0.85; max-width: 600px; margin: 0 auto 30px auto; }
-.stats-row { display: flex; justify-content: center; gap: 40px; flex-wrap: wrap; margin-top: 40px; }
+.hero::before {
+  content: ""; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+  background: radial-gradient(ellipse at 30% 50%, rgba(231,76,60,0.15) 0%, transparent 60%),
+              radial-gradient(ellipse at 70% 50%, rgba(52,152,219,0.1) 0%, transparent 60%);
+}
+.hero h1 { font-size: 3.5em; font-weight: 900; margin: 0 0 10px 0; letter-spacing: -1px; position: relative; }
+.hero p { font-size: 1.3em; opacity: 0.85; max-width: 600px; margin: 0 auto 30px auto; position: relative; }
+.stats-row { display: flex; justify-content: center; gap: 40px; flex-wrap: wrap; margin-top: 40px; position: relative; }
 .stat-box {
   background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);
   border-radius: 16px; padding: 24px 32px; text-align: center; min-width: 160px;
+  backdrop-filter: blur(10px);
 }
 .stat-number { font-size: 3em; font-weight: 900; color: #e74c3c; display: block; line-height: 1; }
 .stat-label { font-size: 0.85em; opacity: 0.8; margin-top: 6px; line-height: 1.4; }
 .section-title {
   font-size: 2em; font-weight: 800; color: #1a1a2e;
-  margin: 50px 0 10px 0; border-left: 5px solid #e74c3c; padding-left: 16px;
+  margin: 60px 0 10px 0; border-left: 5px solid #e74c3c; padding-left: 16px;
 }
 .section-subtitle { color: #666; font-size: 1.1em; margin-bottom: 24px; padding-left: 21px; }
+.intro-block {
+  background: linear-gradient(135deg, #f8f9fa, #fff);
+  border-radius: 20px; padding: 40px; margin: 30px 0;
+  border: 1px solid #e9ecef;
+  display: grid; grid-template-columns: 1fr 1fr; gap: 40px;
+}
+@media(max-width:768px) { .intro-block { grid-template-columns: 1fr; } }
+.intro-block h3 { font-size: 1.2em; font-weight: 800; color: #1a1a2e; margin: 0 0 12px 0; }
+.intro-block p { color: #555; line-height: 1.75; margin: 0 0 12px 0; font-size: 0.95em; }
+.rq-list { list-style: none; padding: 0; margin: 0; }
+.rq-list li {
+  padding: 12px 16px; margin-bottom: 10px;
+  background: white; border-radius: 10px; border-left: 4px solid #e74c3c;
+  font-size: 0.92em; color: #333; line-height: 1.5;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+.rq-num { font-weight: 900; color: #e74c3c; margin-right: 8px; }
+.team-row { display: flex; gap: 16px; margin-top: 16px; flex-wrap: wrap; }
+.team-card {
+  background: white; border-radius: 12px; padding: 16px 20px;
+  border-top: 3px solid #e74c3c; flex: 1; min-width: 120px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06); text-align: center;
+}
+.team-card .name { font-weight: 800; color: #1a1a2e; font-size: 0.95em; }
+.team-card .role { color: #888; font-size: 0.8em; margin-top: 4px; }
 .calc-container {
   background: linear-gradient(135deg, #1a1a2e, #16213e);
   border-radius: 20px; padding: 40px; color: white; margin: 20px 0;
@@ -133,7 +163,7 @@ burden_2023 <- income_2023 %>%
 .calc-input-group label { display: block; font-size: 0.85em; font-weight: 600; margin-bottom: 8px; opacity: 0.8; text-transform: uppercase; }
 .calc-input-group input, .calc-input-group select {
   width: 100%; padding: 14px 16px; border: 2px solid rgba(255,255,255,0.2);
-  border-radius: 10px; font-size: 15px; box-sizing: border-box;
+  border-radius: 10px; font-size: 15px;
   background: rgba(255,255,255,0.1); color: white; outline: none;
 }
 .calc-input-group input::placeholder { color: rgba(255,255,255,0.4); }
@@ -151,10 +181,83 @@ burden_2023 <- income_2023 %>%
 .story-section { padding: 40px 0; border-bottom: 1px solid #eee; max-width: 700px; }
 .story-section:last-child { border-bottom: none; }
 .big-number { font-size: 5em; font-weight: 900; color: #e74c3c; line-height: 1; margin-bottom: 10px; }
-.conclusion-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin: 30px 0; }
-.conclusion-card { background: #f8f9fa; border-radius: 16px; padding: 24px; border-top: 4px solid #e74c3c; }
-.conclusion-card h4 { margin: 0 0 10px 0; color: #1a1a2e; font-size: 1em; }
-.conclusion-card p { margin: 0; color: #555; font-size: 0.9em; line-height: 1.6; }
+.plots-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin: 30px 0; }
+@media(max-width:768px) { .plots-grid { grid-template-columns: 1fr; } }
+.plot-card {
+  background: white; border-radius: 16px; padding: 20px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08); border: 1px solid #f0f0f0;
+}
+.plot-card h4 { font-size: 0.9em; font-weight: 700; color: #1a1a2e; margin: 0 0 12px 0; text-transform: uppercase; letter-spacing: 0.05em; }
+.plot-card img { width: 100%; border-radius: 8px; }
+.plot-card-full { grid-column: 1 / -1; }
+.vs-container {
+  background: linear-gradient(135deg, #1a1a2e, #2c3e50);
+  border-radius: 20px; padding: 40px; color: white; margin: 20px 0;
+}
+.vs-title { font-size: 1.5em; font-weight: 800; margin: 0 0 8px 0; }
+.vs-subtitle { opacity: 0.7; margin-bottom: 28px; font-size: 0.95em; }
+.vs-inputs { display: flex; gap: 16px; align-items: flex-end; flex-wrap: wrap; margin-bottom: 20px; }
+.vs-input-group { flex: 1; min-width: 180px; }
+.vs-input-group label { display: block; font-size: 0.82em; font-weight: 700; margin-bottom: 8px; opacity: 0.75; text-transform: uppercase; letter-spacing: 0.05em; }
+.vs-input-group select {
+  width: 100%; padding: 13px 16px; border: 2px solid rgba(255,255,255,0.15);
+  border-radius: 10px; font-size: 14px;
+  background: rgba(255,255,255,0.1); color: white; outline: none;
+}
+.vs-input-group select option { background: #1a1a2e; color: white; }
+.vs-divider { font-size: 1.8em; font-weight: 900; opacity: 0.5; padding-bottom: 8px; }
+.vs-btn {
+  background: #e74c3c; color: white; border: none;
+  padding: 13px 32px; border-radius: 10px; font-size: 15px;
+  font-weight: 700; cursor: pointer; transition: all 0.2s; white-space: nowrap;
+}
+.vs-btn:hover { background: #c0392b; transform: translateY(-1px); }
+.vs-result { display: none; margin-top: 28px; }
+.vs-cards { display: grid; grid-template-columns: 1fr auto 1fr; gap: 16px; align-items: center; }
+@media(max-width:600px) { .vs-cards { grid-template-columns: 1fr; } }
+.vs-card {
+  background: rgba(255,255,255,0.08); border-radius: 16px; padding: 24px;
+  border: 1px solid rgba(255,255,255,0.1); text-align: center;
+}
+.vs-card.winner { border-color: #27ae60; background: rgba(39,174,96,0.12); }
+.vs-card.loser { border-color: rgba(255,255,255,0.1); opacity: 0.85; }
+.vs-state-name { font-size: 1.2em; font-weight: 800; margin-bottom: 16px; }
+.vs-big-pct { font-size: 3em; font-weight: 900; line-height: 1; margin-bottom: 6px; }
+.vs-pct-label { font-size: 0.8em; opacity: 0.65; margin-bottom: 16px; }
+.vs-metric { font-size: 0.88em; opacity: 0.75; line-height: 1.8; }
+.vs-badge {
+  display: inline-block; padding: 6px 14px; border-radius: 20px;
+  font-size: 0.8em; font-weight: 700; margin-top: 12px;
+}
+.vs-middle { text-align: center; }
+.vs-vs { font-size: 2em; font-weight: 900; opacity: 0.4; }
+.vs-winner-tag { font-size: 0.75em; font-weight: 700; color: #27ae60; margin-top: 8px; }
+.vs-verdict {
+  margin-top: 20px; background: rgba(255,255,255,0.06);
+  border-radius: 12px; padding: 18px 22px; font-size: 0.95em;
+  line-height: 1.7; opacity: 0.9;
+}
+.conclusion-section {
+  background: linear-gradient(135deg, #0f0c29, #1a1a2e);
+  color: white; border-radius: 20px; padding: 50px 40px; margin: 40px 0;
+}
+.conclusion-section h2 { font-size: 2em; font-weight: 900; margin: 0 0 8px 0; }
+.conclusion-section .sub { opacity: 0.65; margin-bottom: 36px; font-size: 1em; }
+.conclusion-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 20px; margin-bottom: 36px;
+}
+.conclusion-card {
+  background: rgba(255,255,255,0.07); border-radius: 16px; padding: 24px;
+  border-top: 3px solid;
+}
+.conclusion-card h4 { margin: 0 0 10px 0; color: white; font-size: 0.95em; font-weight: 800; }
+.conclusion-card p { margin: 0; color: rgba(255,255,255,0.7); font-size: 0.88em; line-height: 1.65; }
+.final-statement {
+  background: rgba(231,76,60,0.15); border-radius: 14px; padding: 24px 28px;
+  border-left: 4px solid #e74c3c; font-size: 1.05em; line-height: 1.75;
+  color: rgba(255,255,255,0.9);
+}
 </style>
 
 <div class="hero">
@@ -225,6 +328,32 @@ function drawGauge(ratio, containerId) {
   </svg>`;
 }
 </script>
+
+<div class="section-title">About This Project</div>
+
+```{=html}
+<div class="intro-block">
+  <div>
+    <h3>What We Set Out to Answer</h3>
+    <p>All three of us are students navigating housing costs right now. When we started this project, we had a simple question: is what we are living through measurable? And is it systematically worse for students and young renters than for everyone else?</p>
+    <p>We pulled data from the U.S. Census Bureau American Community Survey covering rent and income by age group across all 51 states. What we found was more alarming than we expected.</p>
+    <p>This site is the full story: the data, the visualizations, the interactive tools, and the conclusions.</p>
+    <div class="team-row">
+      <div class="team-card"><div class="name">Elma M.</div><div class="role">EDA Lead</div></div>
+      <div class="team-card"><div class="name">Jack D.</div><div class="role">Income Analysis</div></div>
+      <div class="team-card"><div class="name">Thusa</div><div class="role">Team Member</div></div>
+    </div>
+  </div>
+  <div>
+    <h3>Our Research Questions</h3>
+    <ul class="rq-list">
+      <li><span class="rq-num">01</span>Which states are most and least affordable for college-age renters aged 18 to 24, and how does that compare to older adults aged 25 to 44?</li>
+      <li><span class="rq-num">02</span>What is the rent-to-income burden ratio for under-25 householders by state, and how many fall into burdened or severely burdened categories?</li>
+      <li><span class="rq-num">03</span>How has the affordability gap between younger renters and established adults changed over time, and which states show the biggest generational disparities?</li>
+    </ul>
+    <p style="margin-top:16px;font-size:0.85em;color:#888;">Data: ACS 1-Year Estimates B19049 + B25064, 2015-2023 (excl. 2020). Census H-8 Historical Income Tables. Via tidycensus R package.</p>
+  </div>
+</div>
 ```
 
 <div class="section-title">The Map: Rent Burden and Universities</div>
@@ -258,15 +387,12 @@ universities <- data.frame(
     "University of Alabama", "Auburn University",
     "University of Kentucky", "University of Louisville",
     "West Virginia University", "University of Virginia",
-    "University of Nevada Las Vegas",
-    "University of New Mexico",
-    "University of Montana",
-    "University of Wyoming",
-    "University of Vermont",
-    "University of Rhode Island", "University of Connecticut",
-    "University of South Carolina", "Clemson University",
-    "University of Tennessee", "Vanderbilt University",
-    "University of Arkansas",
+    "University of Nevada Las Vegas", "University of New Mexico",
+    "University of Montana", "University of Wyoming",
+    "University of Vermont", "University of Rhode Island",
+    "University of Connecticut", "University of South Carolina",
+    "Clemson University", "University of Tennessee",
+    "Vanderbilt University", "University of Arkansas",
     "University of Oklahoma", "Oklahoma State University",
     "University of Nebraska Lincoln",
     "University of North Dakota", "North Dakota State University",
@@ -276,30 +402,12 @@ universities <- data.frame(
     "University of South Dakota", "South Dakota State University",
     "University of Maine", "University of Idaho",
     "University of Alaska Fairbanks",
-
-    # Added colleges
-    "Macalester College",
-    "Harvard University",
-    "MIT",
-    "Boston University",
-    "Yale University",
-    "Princeton University",
-    "University of Chicago",
-    "Carnegie Mellon University",
-    "University of Pittsburgh",
-    "Ohio State University",
-    "University of Illinois Urbana-Champaign",
-    "Northwestern University",
-    "Boston College",
-    "Rutgers University",
-    "Temple University",
-    "Drexel University",
-    "George Washington University",
-    "American University",
-    "Emory University",
-    "University of Central Florida"
+    "Macalester College", "Harvard University", "MIT",
+    "Boston University", "Yale University", "Princeton University",
+    "University of Chicago", "Carnegie Mellon University",
+    "Ohio State University", "Northwestern University",
+    "Emory University", "University of Central Florida"
   ),
-
   lat = c(
     34.0689, 37.8724, 37.4275, 34.0224,
     25.7142, 30.4420, 29.6465,
@@ -321,15 +429,12 @@ universities <- data.frame(
     33.2148, 32.6099,
     38.0473, 38.2527,
     39.6350, 38.0336,
-    36.1140,
-    35.0844,
-    46.8625,
-    42.8666,
-    44.4759,
-    41.4801, 41.8084,
-    33.9979, 34.6834,
-    35.9546, 36.1447,
-    36.0671,
+    36.1140, 35.0844,
+    46.8625, 42.8666,
+    44.4759, 41.4801,
+    41.8084, 33.9979,
+    34.6834, 35.9546,
+    36.1447, 36.0671,
     35.2076, 36.1156,
     40.8202,
     47.9219, 46.8974,
@@ -339,30 +444,12 @@ universities <- data.frame(
     43.0760, 44.3168,
     44.9015, 46.7196,
     64.8581,
-
-    # Added colleges
-    44.9375,
-    42.3770,
-    42.3601,
-    42.3505,
-    41.3163,
-    40.3430,
-    41.7886,
-    40.4444,
-    40.4440,
-    40.0076,
-    40.1020,
-    42.0565,
-    42.3355,
-    40.5008,
-    39.9812,
-    39.9566,
-    38.8997,
-    38.9378,
-    33.7925,
-    28.6024
+    44.9375, 42.3770, 42.3601,
+    42.3505, 41.3163, 40.3430,
+    41.7886, 40.4444,
+    40.0076, 42.0565,
+    33.7925, 28.6024
   ),
-
   lng = c(
     -118.4452, -122.2595, -122.1697, -118.2851,
     -80.2790, -84.2980, -82.3520,
@@ -384,15 +471,12 @@ universities <- data.frame(
     -87.5450, -85.4808,
     -84.5047, -85.7585,
     -79.9559, -78.5080,
-    -115.1398,
-    -106.6504,
-    -114.0120,
-    -108.9658,
-    -73.1937,
-    -71.5274, -72.2495,
-    -81.0219, -82.8374,
-    -83.9274, -86.8025,
-    -94.1792,
+    -115.1398, -106.6504,
+    -114.0120, -108.9658,
+    -73.1937, -71.5274,
+    -72.2495, -81.0219,
+    -82.8374, -83.9274,
+    -86.8025, -94.1792,
     -97.4395, -96.5925,
     -96.7005,
     -101.9971, -96.7833,
@@ -402,30 +486,12 @@ universities <- data.frame(
     -96.9040, -96.8022,
     -68.9675, -116.9190,
     -147.8469,
-
-    # Added colleges
-    -93.1710,
-    -71.1167,
-    -71.0942,
-    -71.1054,
-    -72.9223,
-    -74.6514,
-    -87.5987,
-    -79.9532,
-    -79.9959,
-    -83.0300,
-    -88.2272,
-    -87.6753,
-    -71.1668,
-    -74.4474,
-    -75.1557,
-    -75.1899,
-    -77.0479,
-    -77.0881,
-    -84.3267,
-    -81.2001
+    -93.1710, -71.1167, -71.0942,
+    -71.1054, -72.9223, -74.6514,
+    -87.5987, -79.9532,
+    -83.0300, -87.6753,
+    -84.3267, -81.2001
   ),
-
   state = c(
     "California", "California", "California", "California",
     "Florida", "Florida", "Florida",
@@ -447,15 +513,12 @@ universities <- data.frame(
     "Alabama", "Alabama",
     "Kentucky", "Kentucky",
     "West Virginia", "Virginia",
-    "Nevada",
-    "New Mexico",
-    "Montana",
-    "Wyoming",
-    "Vermont",
-    "Rhode Island", "Connecticut",
-    "South Carolina", "South Carolina",
-    "Tennessee", "Tennessee",
-    "Arkansas",
+    "Nevada", "New Mexico",
+    "Montana", "Wyoming",
+    "Vermont", "Rhode Island",
+    "Connecticut", "South Carolina",
+    "South Carolina", "Tennessee",
+    "Tennessee", "Arkansas",
     "Oklahoma", "Oklahoma",
     "Nebraska",
     "North Dakota", "North Dakota",
@@ -465,28 +528,11 @@ universities <- data.frame(
     "South Dakota", "South Dakota",
     "Maine", "Idaho",
     "Alaska",
-
-    # Added colleges
-    "Minnesota",
-    "Massachusetts",
-    "Massachusetts",
-    "Massachusetts",
-    "Connecticut",
-    "New Jersey",
-    "Illinois",
-    "Pennsylvania",
-    "Pennsylvania",
-    "Ohio",
-    "Illinois",
-    "Illinois",
-    "Massachusetts",
-    "New Jersey",
-    "Pennsylvania",
-    "Pennsylvania",
-    "District of Columbia",
-    "District of Columbia",
-    "Georgia",
-    "Florida"
+    "Minnesota", "Massachusetts", "Massachusetts",
+    "Massachusetts", "Connecticut", "New Jersey",
+    "Illinois", "Pennsylvania",
+    "Ohio", "Illinois",
+    "Georgia", "Florida"
   )
 ) %>%
   left_join(
@@ -531,17 +577,11 @@ states_sf2 <- tigris::states(cb = TRUE, resolution = "20m", year = 2022) %>%
   sf::st_transform(crs = 4326) %>%
   left_join(burden_2023, by = c("NAME" = "State"))
 
-pal2 <- colorNumeric(
-  palette = c("#27ae60", "#f39c12", "#e74c3c"),
-  domain  = c(10, 55)
-)
+pal2 <- colorNumeric(palette = c("#27ae60", "#f39c12", "#e74c3c"), domain = c(10, 55))
 
-icon_green  <- makeAwesomeIcon(icon = "graduation-cap", library = "fa",
-                               markerColor = "green",  iconColor = "white")
-icon_orange <- makeAwesomeIcon(icon = "graduation-cap", library = "fa",
-                               markerColor = "orange", iconColor = "white")
-icon_red    <- makeAwesomeIcon(icon = "graduation-cap", library = "fa",
-                               markerColor = "red",    iconColor = "white")
+icon_green  <- makeAwesomeIcon(icon = "graduation-cap", library = "fa", markerColor = "green",  iconColor = "white")
+icon_orange <- makeAwesomeIcon(icon = "graduation-cap", library = "fa", markerColor = "orange", iconColor = "white")
+icon_red    <- makeAwesomeIcon(icon = "graduation-cap", library = "fa", markerColor = "red",    iconColor = "white")
 
 unis_g <- universities %>% filter(marker_color == "green")
 unis_o <- universities %>% filter(marker_color == "orange")
@@ -550,53 +590,178 @@ unis_r <- universities %>% filter(marker_color == "red")
 m <- leaflet(states_sf2) %>%
   addProviderTiles(providers$CartoDB.Positron) %>%
   addPolygons(
-    fillColor   = ~pal2(burden_under25),
-    fillOpacity = 0.65,
-    color       = "white",
-    weight      = 1,
-    smoothFactor = 0.5,
-    label = ~paste0(NAME, ": ", round(burden_under25, 1), "% burden") %>%
-      lapply(htmltools::HTML),
-    labelOptions = labelOptions(
-      style = list("font-weight" = "bold", padding = "4px 8px"),
-      textsize = "12px"
-    )
+    fillColor = ~pal2(burden_under25), fillOpacity = 0.65,
+    color = "white", weight = 1, smoothFactor = 0.5,
+    label = ~paste0(NAME, ": ", round(burden_under25, 1), "% burden") %>% lapply(htmltools::HTML),
+    labelOptions = labelOptions(style = list("font-weight" = "bold", padding = "4px 8px"), textsize = "12px")
   ) %>%
-  addLegend(
-    pal = pal2, values = ~burden_under25,
+  addLegend(pal = pal2, values = ~burden_under25,
     title = "Rent Burden (%)<br><small>Under-25 Householders</small>",
-    position = "bottomleft",
-    labFormat = labelFormat(suffix = "%")
-  )
+    position = "bottomleft", labFormat = labelFormat(suffix = "%"))
 
-if (nrow(unis_g) > 0) {
-  m <- m %>% addAwesomeMarkers(
-    data = unis_g, lng = ~lng, lat = ~lat,
-    icon = icon_green, popup = ~popup_text,
-    label = ~name, group = "Affordable States"
-  )
-}
-if (nrow(unis_o) > 0) {
-  m <- m %>% addAwesomeMarkers(
-    data = unis_o, lng = ~lng, lat = ~lat,
-    icon = icon_orange, popup = ~popup_text,
-    label = ~name, group = "Burdened States"
-  )
-}
-if (nrow(unis_r) > 0) {
-  m <- m %>% addAwesomeMarkers(
-    data = unis_r, lng = ~lng, lat = ~lat,
-    icon = icon_red, popup = ~popup_text,
-    label = ~name, group = "Severely Burdened States"
-  )
-}
+if (nrow(unis_g) > 0) m <- m %>% addAwesomeMarkers(data = unis_g, lng = ~lng, lat = ~lat, icon = icon_green, popup = ~popup_text, label = ~name, group = "Affordable States")
+if (nrow(unis_o) > 0) m <- m %>% addAwesomeMarkers(data = unis_o, lng = ~lng, lat = ~lat, icon = icon_orange, popup = ~popup_text, label = ~name, group = "Burdened States")
+if (nrow(unis_r) > 0) m <- m %>% addAwesomeMarkers(data = unis_r, lng = ~lng, lat = ~lat, icon = icon_red, popup = ~popup_text, label = ~name, group = "Severely Burdened States")
 
 m %>%
-  addLayersControl(
-    overlayGroups = c("Affordable States", "Burdened States", "Severely Burdened States"),
-    options = layersControlOptions(collapsed = FALSE)
-  ) %>%
+  addLayersControl(overlayGroups = c("Affordable States", "Burdened States", "Severely Burdened States"),
+    options = layersControlOptions(collapsed = FALSE)) %>%
   setView(lng = -96, lat = 38, zoom = 4)
+```
+
+<div class="section-title">The EDA: What the Data Showed</div>
+<div class="section-subtitle">Six visualizations from our exploratory data analysis. Every chart tells part of the same story.</div>
+
+```{r}
+#| label: eda-plots
+#| echo: false
+#| message: false
+#| warning: false
+
+library(ggrepel)
+
+COLORS_EDA <- c(
+  "Affordable (<30%)"        = "#27ae60",
+  "Burdened (30-50%)"        = "#e67e22",
+  "Severely Burdened (>50%)" = "#c0392b"
+)
+
+theme_rb <- function() {
+  theme_minimal(base_size = 12) +
+    theme(
+      plot.title    = element_text(face = "bold", size = 14, color = "#1a1a2e", margin = margin(b = 4)),
+      plot.subtitle = element_text(size = 10, color = "#555577", margin = margin(b = 12)),
+      plot.caption  = element_text(size = 8, color = "#888899", hjust = 0, margin = margin(t = 8)),
+      panel.grid.minor = element_blank(),
+      legend.position  = "top",
+      plot.background  = element_rect(fill = "#fafafa", color = NA),
+      panel.background = element_rect(fill = "#fafafa", color = NA),
+      plot.margin = margin(16, 20, 12, 16)
+    )
+}
+
+burden_2023_eda <- burden_2023 %>%
+  mutate(burden_cat_under25 = case_when(
+    burden_under25 < 30  ~ "Affordable (<30%)",
+    burden_under25 < 50  ~ "Burdened (30-50%)",
+    burden_under25 >= 50 ~ "Severely Burdened (>50%)"
+  ))
+
+# Plot 1: Distribution
+p1 <- ggplot(burden_2023_eda, aes(x = burden_under25, fill = burden_cat_under25)) +
+  geom_histogram(bins = 18, color = "white", linewidth = 0.4, alpha = 0.92) +
+  geom_vline(xintercept = 30, linetype = "dashed", color = "#1a1a2e", linewidth = 0.8) +
+  geom_vline(xintercept = 50, linetype = "dashed", color = "#1a1a2e", linewidth = 0.8) +
+  annotate("text", x = 31, y = 8, label = "30% threshold", hjust = 0, size = 3, color = "#1a1a2e", fontface = "italic") +
+  scale_fill_manual(values = COLORS_EDA, name = NULL) +
+  scale_x_continuous(labels = label_percent(scale = 1)) +
+  labs(title = "How Burdened Are Young Renters?",
+       subtitle = "Distribution of burden ratios for under-25 householders (2023)",
+       x = "Rent Burden Ratio", y = "Number of States",
+       caption = "ACS B19049 + B25064, 2023") +
+  theme_rb()
+
+# Plot 2: Least affordable
+p2 <- burden_2023_eda %>% slice_head(n = 10) %>%
+  ggplot(aes(x = fct_reorder(State, burden_under25), y = burden_under25, fill = burden_cat_under25)) +
+  geom_col(width = 0.7, alpha = 0.92) +
+  geom_text(aes(label = paste0(round(burden_under25, 1), "%")), hjust = -0.15, size = 3, fontface = "bold", color = "#1a1a2e") +
+  coord_flip(clip = "off") +
+  scale_fill_manual(values = COLORS_EDA, name = NULL) +
+  scale_y_continuous(limits = c(0, 58), labels = label_percent(scale = 1)) +
+  labs(title = "Top 10 Least Affordable States", subtitle = "Highest rent burden for under-25 (2023)", x = NULL, y = "Burden Ratio (%)") +
+  theme_rb() + theme(legend.position = "none")
+
+# Plot 3: Most affordable
+p3 <- burden_2023_eda %>% slice_tail(n = 10) %>%
+  ggplot(aes(x = fct_reorder(State, burden_under25), y = burden_under25, fill = burden_cat_under25)) +
+  geom_col(width = 0.7, alpha = 0.92) +
+  geom_text(aes(label = paste0(round(burden_under25, 1), "%")), hjust = -0.15, size = 3, fontface = "bold", color = "#1a1a2e") +
+  coord_flip(clip = "off") +
+  scale_fill_manual(values = COLORS_EDA, name = NULL) +
+  scale_y_continuous(limits = c(0, 35), labels = label_percent(scale = 1)) +
+  labs(title = "Top 10 Most Affordable States", subtitle = "Lowest rent burden for under-25 (2023)", x = NULL, y = "Burden Ratio (%)") +
+  theme_rb() + theme(legend.position = "none")
+
+# Plot 6: Scatter
+p6 <- ggplot(burden_2023_eda,
+    aes(x = income_under25, y = median_rent_annual, color = burden_cat_under25, label = State)) +
+  geom_abline(slope = 0.30, intercept = 0, linetype = "dashed", color = "#27ae60", linewidth = 0.8) +
+  geom_abline(slope = 0.50, intercept = 0, linetype = "dashed", color = "#c0392b", linewidth = 0.8) +
+  geom_point(size = 3, alpha = 0.85) +
+  geom_text_repel(data = burden_2023_eda %>% filter(burden_under25 > 40 | burden_under25 < 26),
+    size = 2.8, color = "#333355", max.overlaps = 15, segment.color = "#ccccdd") +
+  scale_color_manual(values = COLORS_EDA, name = NULL) +
+  scale_x_continuous(labels = label_dollar()) +
+  scale_y_continuous(labels = label_dollar()) +
+  annotate("text", x = 58000, y = 58000 * 0.30 + 500, label = "30% burden line", size = 2.8, color = "#27ae60", angle = 18, fontface = "italic") +
+  annotate("text", x = 43000, y = 43000 * 0.50 + 500, label = "50% burden line", size = 2.8, color = "#c0392b", angle = 28, fontface = "italic") +
+  labs(title = "Income vs. Rent: What Drives Burden?",
+       subtitle = "Each dot = one state. Above dashed lines = cost-burdened.",
+       x = "Median Annual Income (Under-25)", y = "Median Annual Rent",
+       caption = "ACS B19049 + B25064, 2023") +
+  theme_rb()
+```
+
+```{=html}
+<div class="plots-grid">
+  <div class="plot-card">
+    <h4>Burden Distribution</h4>
+```
+
+```{r}
+#| echo: false
+#| message: false
+#| warning: false
+#| fig-height: 4
+print(p1)
+```
+
+```{=html}
+  </div>
+  <div class="plot-card">
+    <h4>Income vs. Rent</h4>
+```
+
+```{r}
+#| echo: false
+#| message: false
+#| warning: false
+#| fig-height: 4
+print(p6)
+```
+
+```{=html}
+  </div>
+  <div class="plot-card">
+    <h4>Top 10 Least Affordable</h4>
+```
+
+```{r}
+#| echo: false
+#| message: false
+#| warning: false
+#| fig-height: 4
+print(p2)
+```
+
+```{=html}
+  </div>
+  <div class="plot-card">
+    <h4>Top 10 Most Affordable</h4>
+```
+
+```{r}
+#| echo: false
+#| message: false
+#| warning: false
+#| fig-height: 4
+print(p3)
+```
+
+```{=html}
+  </div>
+</div>
 ```
 
 <div class="section-title">The Generational Gap</div>
@@ -610,8 +775,7 @@ m %>%
 
 burden_long <- burden_2023 %>%
   select(State, burden_under25, burden_25_44) %>%
-  pivot_longer(c(burden_under25, burden_25_44),
-               names_to = "age_group", values_to = "burden_ratio") %>%
+  pivot_longer(c(burden_under25, burden_25_44), names_to = "age_group", values_to = "burden_ratio") %>%
   mutate(age_group = recode(age_group,
     "burden_under25" = "Under 25 (college-age)",
     "burden_25_44"   = "Ages 25-44 (established adults)"
@@ -620,29 +784,21 @@ burden_long <- burden_2023 %>%
 p4 <- ggplot(burden_long,
   aes(x = burden_ratio, fill = age_group,
       text = paste0(age_group, "<br>Burden: ", round(burden_ratio, 1), "%"))) +
-  geom_histogram(bins = 20, color = "white", linewidth = 0.3,
-                 alpha = 0.82, position = "identity") +
+  geom_histogram(bins = 20, color = "white", linewidth = 0.3, alpha = 0.82, position = "identity") +
   geom_vline(xintercept = 30, linetype = "dashed", color = "#1a1a2e", linewidth = 1) +
   geom_vline(xintercept = 50, linetype = "dashed", color = "#c0392b", linewidth = 1) +
   annotate("rect", xmin = 30, xmax = 50, ymin = 0, ymax = Inf, alpha = 0.05, fill = "#e67e22") +
   annotate("rect", xmin = 50, xmax = Inf, ymin = 0, ymax = Inf, alpha = 0.08, fill = "#c0392b") +
-  annotate("text", x = 31, y = 16, label = "Burdened zone", hjust = 0,
-           size = 3.2, color = "#e67e22", fontface = "italic") +
-  annotate("text", x = 51, y = 16, label = "Severely burdened", hjust = 0,
-           size = 3.2, color = "#c0392b", fontface = "italic") +
-  scale_fill_manual(values = c(
-    "Under 25 (college-age)"          = "#e74c3c",
-    "Ages 25-44 (established adults)" = "#3498db"
-  ), name = "Age Group") +
+  annotate("text", x = 31, y = 16, label = "Burdened zone", hjust = 0, size = 3.2, color = "#e67e22", fontface = "italic") +
+  annotate("text", x = 51, y = 16, label = "Severely burdened", hjust = 0, size = 3.2, color = "#c0392b", fontface = "italic") +
+  scale_fill_manual(values = c("Under 25 (college-age)" = "#e74c3c", "Ages 25-44 (established adults)" = "#3498db"), name = "Age Group") +
   scale_x_continuous(labels = label_percent(scale = 1)) +
-  labs(x = "Rent Burden Ratio", y = "Number of States",
-       caption = "Source: ACS 1-Year Estimates (B19049, B25064), 2023") +
+  labs(x = "Rent Burden Ratio", y = "Number of States", caption = "ACS 1-Year Estimates (B19049, B25064), 2023") +
   theme_minimal(base_size = 13) +
   theme(legend.position = "top", panel.grid.minor = element_blank())
 
 ggplotly(p4, tooltip = "text") %>%
-  layout(legend = list(orientation = "h", x = 0.05, y = 1.12),
-         font = list(family = "sans-serif"))
+  layout(legend = list(orientation = "h", x = 0.05, y = 1.12), font = list(family = "sans-serif"))
 ```
 
 ```{=html}
@@ -655,7 +811,6 @@ ggplotly(p4, tooltip = "text") %>%
   <p style="font-size:1.2em;color:#333;line-height:1.7;">The number of states where adults aged 25-44 are cost-burdened. <strong>Not a single one.</strong> The same rents that crush young budgets are entirely manageable once income catches up.</p>
 </div>
 <div class="story-section">
-
   <div class="big-number">2x</div>
   <p style="font-size:1.2em;color:#333;line-height:1.7;">Young renters spend roughly <strong>twice as much of their income on rent</strong> as established adults. Average 33.7% for under-25 versus 17.8% for 25-44. Same apartments. Very different realities.</p>
 </div>
@@ -671,69 +826,54 @@ ggplotly(p4, tooltip = "text") %>%
 
 rent_json <- paste0(
   "{",
-  paste0('"', burden_2023$State, '":', round(burden_2023$median_rent_annual, 0),
-         collapse = ","),
+  paste0('"', burden_2023$State, '":', round(burden_2023$median_rent_annual, 0), collapse = ","),
   "}"
 )
 
-cat(paste0(
-'<div class="calc-container">
-<div class="calc-title">Student Housing Affordability Calculator</div>
-<div class="calc-subtitle">Enter your annual income and pick a state to see your personal rent burden</div>
-
-<div class="calc-inputs">
-<div class="calc-input-group">
-<label>Your Annual Income ($)</label>
-<input type="number" id="ci" placeholder="e.g. 28000"/>
+cat(paste0('
+<div class="calc-container">
+  <div class="calc-title">Student Housing Affordability Calculator</div>
+  <div class="calc-subtitle">Enter your annual income and pick a state to see your personal rent burden</div>
+  <div class="calc-inputs">
+    <div class="calc-input-group">
+      <label>Your Annual Income ($)</label>
+      <input type="number" id="ci" placeholder="e.g. 28000"/>
+    </div>
+    <div class="calc-input-group">
+      <label>Select a State</label>
+      <select id="cs"><option value="">Choose a state...</option></select>
+    </div>
+  </div>
+  <button class="calc-btn" onclick="runCalc()">Calculate My Burden</button>
+  <div class="result-gauge" id="rg">
+    <div style="text-align:center"><div id="cg"></div></div>
+    <div class="result-details">
+      <div class="result-verdict" id="rv"></div>
+      <div class="result-rent-line" id="rl"></div>
+    </div>
+  </div>
 </div>
-
-<div class="calc-input-group">
-<label>Select a State</label>
-<select id="cs"><option value="">Choose a state...</option></select>
-</div>
-</div>
-
-<button class="calc-btn" onclick="runCalc()">Calculate My Burden</button>
-
-<div class="result-gauge" id="rg">
-<div style="text-align:center"><div id="cg"></div></div>
-<div class="result-details">
-<div class="result-verdict" id="rv"></div>
-<div class="result-rent-line" id="rl"></div>
-</div>
-</div>
-</div>
-
 <script>
 const CRD = ', rent_json, ';
 const csel = document.getElementById("cs");
-
 Object.keys(CRD).sort().forEach(s => {
   const o = document.createElement("option");
-  o.value = s;
-  o.textContent = s;
-  csel.appendChild(o);
+  o.value = s; o.textContent = s; csel.appendChild(o);
 });
-
 function runCalc() {
   const income = parseFloat(document.getElementById("ci").value);
   const state  = document.getElementById("cs").value;
   const gDiv   = document.getElementById("rg");
-
   if (!income || income <= 0 || !state) {
     gDiv.style.display = "block";
-    document.getElementById("rv").innerHTML =
-      "<span style=\'color:#f39c12\'>Please enter income and select a state.</span>";
+    document.getElementById("rv").innerHTML = "<span style=\'color:#f39c12\'>Please enter income and select a state.</span>";
     document.getElementById("rl").textContent = "";
     document.getElementById("cg").innerHTML = "";
     return;
   }
-
   const rent  = CRD[state];
   const ratio = parseFloat(((rent / income) * 100).toFixed(1));
-
   gDiv.style.display = "block";
-
   let verdict;
   if (ratio < 30) {
     verdict = "At <strong>" + ratio + "%</strong> of your income on rent in " + state + ", you fall below the 30% threshold. You have room to save and breathe.";
@@ -742,615 +882,226 @@ function runCalc() {
   } else {
     verdict = "In " + state + ", a staggering <strong>" + ratio + "%</strong> of your income would go to rent. This is a crisis-level burden by every economic standard.";
   }
-
   document.getElementById("rv").innerHTML = verdict;
-  document.getElementById("rl").textContent =
-    "Based on median annual rent of $" + rent.toLocaleString() + " in " + state + " (ACS 2023)";
+  document.getElementById("rl").textContent = "Based on median annual rent of $" + rent.toLocaleString() + " in " + state + " (ACS 2023)";
   drawGauge(ratio, "cg");
 }
-</script>'
-))
+</script>
+'))
 ```
 
 <div class="section-title">Should I Go There?</div>
 <div class="section-subtitle">Enter your income, pick a college, and find out if you can actually afford to live there. We will also find you cheaper alternatives.</div>
 
 ```{r}
-#| label: should-i-go-there-tool
+#| label: college-finder-data
 #| echo: false
 #| results: asis
 
-college_tool_data <- universities %>%
-  select(
-    college_name = name,
-    state
-  ) %>%
-  left_join(
-    burden_2023 %>%
-      select(
-        State,
-        median_rent_annual,
-        income_under25,
-        burden_under25,
-        burden_cat_under25
-      ),
-    by = c("state" = "State")
-  ) %>%
-  distinct(college_name, .keep_all = TRUE) %>%
-  arrange(college_name)
+uni_data <- universities %>%
+  select(name, state, burden_under25, median_rent_annual, income_under25, burden_cat_under25) %>%
+  arrange(name)
 
-umn_row <- college_tool_data %>%
-  filter(college_name == "University of Minnesota")
-
-if (nrow(umn_row) == 0) {
-  umn_row <- college_tool_data %>%
-    filter(grepl("Minnesota", college_name))
-}
-
-umn_rent <- round(umn_row$median_rent_annual[1], 0)
-
-college_json <- paste0(
+uni_json <- paste0(
   "{",
   paste0(
-    '"', gsub('"', '\\\\"', college_tool_data$college_name), '":{',
-    '"state":"', gsub('"', '\\\\"', college_tool_data$state), '",',
-    '"rent":', round(college_tool_data$median_rent_annual, 0), ',',
-    '"income_under25":', round(college_tool_data$income_under25, 0), ',',
-    '"state_burden":', round(college_tool_data$burden_under25, 1), ',',
-    '"category":"', gsub('"', '\\\\"', as.character(college_tool_data$burden_cat_under25)), '"',
-    "}",
+    '"', gsub('"', '\\\\"', uni_data$name), '":{"state":"', uni_data$state,
+    '","burden":', round(uni_data$burden_under25, 1),
+    ',"rent":', round(uni_data$median_rent_annual, 0),
+    ',"cat":"', uni_data$burden_cat_under25, '"',
+    '}',
     collapse = ","
   ),
   "}"
 )
 
-state_json <- paste0(
-  "[",
-  paste0(
-    "{",
-    '"state":"', gsub('"', '\\\\"', burden_2023$State), '",',
-    '"rent":', round(burden_2023$median_rent_annual, 0), ',',
-    '"burden":', round(burden_2023$burden_under25, 1),
-    "}",
-    collapse = ","
-  ),
-  "]"
-)
+cat('<script>const UD =', uni_json, ';</script>')
+```
 
-cat(paste0('<style>
-.go-college-wrap{
-background:linear-gradient(135deg,#111827,#1f2937,#0f172a);
-color:white;
-border-radius:24px;
-padding:36px;
-margin:30px 0;
-box-shadow:0 18px 50px rgba(0,0,0,0.18);
-}
-.go-college-title{
-font-size:2em;
-font-weight:900;
-margin-bottom:8px;
-}
-.go-college-subtitle{
-color:rgba(255,255,255,0.78);
-margin-bottom:26px;
-font-size:1em;
-line-height:1.6;
-max-width:760px;
-}
-.go-college-grid{
-display:grid;
-grid-template-columns:repeat(auto-fit,minmax(230px,1fr));
-gap:16px;
-margin-bottom:20px;
-}
-.go-field label{
-display:block;
-font-size:0.82em;
-font-weight:700;
-letter-spacing:0.06em;
-text-transform:uppercase;
-color:rgba(255,255,255,0.72);
-margin-bottom:8px;
-}
-.go-field input,
-.go-field select{
-width:100%;
-box-sizing:border-box;
-padding:14px 16px;
-border-radius:12px;
-border:2px solid rgba(255,255,255,0.14);
-background:rgba(255,255,255,0.08);
-color:white;
-font-size:15px;
-outline:none;
-}
-.go-field select option{
-color:black;
-}
-.go-btn-row{
-display:flex;
-gap:12px;
-flex-wrap:wrap;
-margin-top:6px;
-}
-.go-btn{
-border:none;
-border-radius:12px;
-padding:14px 22px;
-font-weight:800;
-font-size:15px;
-cursor:pointer;
-transition:0.2s ease;
-}
-.go-btn-primary{
-background:#ef4444;
-color:white;
-}
-.go-btn-primary:hover{
-background:#dc2626;
-transform:translateY(-1px);
-}
-.go-btn-secondary{
-background:#f8fafc;
-color:#111827;
-}
-.go-btn-secondary:hover{
-background:#e2e8f0;
-transform:translateY(-1px);
-}
-.go-results{
-display:none;
-margin-top:28px;
-}
-.go-top{
-display:grid;
-grid-template-columns:260px 1fr;
-gap:24px;
-align-items:center;
-}
-@media (max-width:800px){
-.go-top{
-grid-template-columns:1fr;
-}
-}
-.go-card{
-background:rgba(255,255,255,0.08);
-border:1px solid rgba(255,255,255,0.1);
-border-radius:18px;
-padding:22px;
-}
-.go-badge{
-display:inline-block;
-padding:7px 12px;
-border-radius:999px;
-font-size:0.8em;
-font-weight:800;
-margin-top:10px;
-}
-.go-verdict{
-font-size:1.14em;
-line-height:1.7;
-margin-bottom:14px;
-}
-.go-mini{
-color:rgba(255,255,255,0.7);
-font-size:0.92em;
-line-height:1.6;
-}
-.go-compare-box{
-margin-top:18px;
-background:rgba(255,255,255,0.06);
-border-left:5px solid #f59e0b;
-border-radius:14px;
-padding:16px 18px;
-}
-.go-compare-title{
-font-size:0.83em;
-letter-spacing:0.06em;
-text-transform:uppercase;
-color:rgba(255,255,255,0.7);
-font-weight:800;
-margin-bottom:8px;
-}
-.go-compare-text{
-font-size:1.02em;
-line-height:1.65;
-}
-.go-extra-box{
-margin-top:18px;
-background:rgba(255,255,255,0.06);
-border-left:5px solid #60a5fa;
-border-radius:14px;
-padding:16px 18px;
-}
-.go-extra-title{
-font-size:0.83em;
-letter-spacing:0.06em;
-text-transform:uppercase;
-color:rgba(255,255,255,0.7);
-font-weight:800;
-margin-bottom:8px;
-}
-.go-extra-text{
-font-size:1.02em;
-line-height:1.65;
-}
-.go-alt-results{
-display:none;
-margin-top:22px;
-}
-.go-alt-title{
-font-size:1.1em;
-font-weight:800;
-margin-bottom:12px;
-}
-.go-alt-grid{
-display:grid;
-grid-template-columns:repeat(auto-fit,minmax(210px,1fr));
-gap:14px;
-}
-.go-alt-card{
-background:rgba(255,255,255,0.08);
-border:1px solid rgba(255,255,255,0.1);
-border-radius:16px;
-padding:16px;
-}
-.go-alt-college{
-font-weight:800;
-font-size:1em;
-margin-bottom:5px;
-}
-.go-alt-state{
-color:rgba(255,255,255,0.72);
-font-size:0.9em;
-margin-bottom:10px;
-}
-.go-alt-metric{
-font-size:0.96em;
-line-height:1.6;
-}
-.go-note{
-margin-top:14px;
-color:rgba(255,255,255,0.65);
-font-size:0.88em;
-line-height:1.5;
-}
-.go-move-wrap{
-margin-top:30px;
-padding-top:24px;
-border-top:1px solid rgba(255,255,255,0.12);
-}
-.go-move-title{
-font-size:1.3em;
-font-weight:900;
-margin-bottom:8px;
-}
-.go-move-subtitle{
-color:rgba(255,255,255,0.72);
-margin-bottom:18px;
-line-height:1.6;
-}
-.go-move-results{
-display:none;
-margin-top:18px;
-}
-.go-move-grid{
-display:grid;
-grid-template-columns:repeat(auto-fit,minmax(210px,1fr));
-gap:14px;
-}
-.go-pill{
-display:inline-block;
-padding:4px 10px;
-border-radius:999px;
-font-size:0.78em;
-font-weight:800;
-margin-top:8px;
-}
-</style>
-
-<div class="go-college-wrap">
-<div class="go-college-title">Should I Go There?</div>
-<div class="go-college-subtitle">
-Type your annual income, choose a university, and see whether living in that state would actually be affordable for you.
-You will also get a comparison with the University of Minnesota, the income needed to become affordable, and a stress test if rent rises by 10%.
-</div>
-
-<div class="go-college-grid">
-<div class="go-field">
-<label>Your Annual Income ($)</label>
-<input type="number" id="go-income" placeholder="e.g. 28000" />
-</div>
-<div class="go-field">
-<label>Select a College</label>
-<select id="go-college">
-<option value="">Choose a college...</option>
-</select>
-</div>
-</div>
-
-<div class="go-btn-row">
-<button class="go-btn go-btn-primary" onclick="runCollegeAffordabilityTool()">Check Affordability</button>
-<button class="go-btn go-btn-secondary" onclick="findAffordableAlternatives()">Best College Alternatives</button>
-</div>
-
-<div class="go-results" id="go-results">
-<div class="go-top">
-<div class="go-card">
-<div id="go-gauge"></div>
-</div>
-
-<div class="go-card">
-<div class="go-verdict" id="go-verdict"></div>
-<div id="go-badge-wrap"></div>
-<div class="go-mini" id="go-details"></div>
-
-<div class="go-compare-box">
-<div class="go-compare-title">Comparison</div>
-<div class="go-compare-text" id="go-compare"></div>
-</div>
-
-<div class="go-extra-box">
-<div class="go-extra-title">Income needed</div>
-<div class="go-extra-text" id="go-income-needed"></div>
-</div>
-
-<div class="go-extra-box">
-<div class="go-extra-title">What if rent rises by 10%?</div>
-<div class="go-extra-text" id="go-rent-shock"></div>
-</div>
-</div>
-</div>
-</div>
-
-<div class="go-alt-results" id="go-alt-results">
-<div class="go-alt-title">Best college alternatives for your income</div>
-<div class="go-alt-grid" id="go-alt-grid"></div>
-<div class="go-note">
-These are the lowest-burden college options in your current list, ranked for your income.
-</div>
-</div>
-
-<div class="go-move-wrap">
-<div class="go-move-title">Where Should I Move?</div>
-<div class="go-move-subtitle">
-Enter your income and we will rank the best U.S. states for affordability based on median annual rent.
-</div>
-<div class="go-btn-row">
-<button class="go-btn go-btn-secondary" onclick="recommendStates()">Find Best States For Me</button>
-</div>
-<div class="go-move-results" id="go-move-results">
-<div class="go-move-grid" id="go-move-grid"></div>
-</div>
-</div>
+```{=html}
+<div style="background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);border-radius:20px;padding:40px;color:white;margin:20px 0;">
+  <div style="font-size:1.5em;font-weight:800;margin:0 0 8px 0;">Should I Go There?</div>
+  <div style="opacity:0.7;margin-bottom:28px;font-size:0.95em;">Enter your income and pick a college to see if you can afford to live nearby. We will show you affordable alternatives too.</div>
+  <div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:20px;">
+    <div style="flex:1;min-width:200px;">
+      <label style="display:block;font-size:0.85em;font-weight:600;margin-bottom:8px;opacity:0.8;text-transform:uppercase;">Your Annual Income ($)</label>
+      <input type="number" id="fi" placeholder="e.g. 28000" style="width:100%;padding:14px 16px;border:2px solid rgba(255,255,255,0.2);border-radius:10px;font-size:15px;box-sizing:border-box;background:rgba(255,255,255,0.1);color:white;outline:none;"/>
+    </div>
+    <div style="flex:1;min-width:200px;">
+      <label style="display:block;font-size:0.85em;font-weight:600;margin-bottom:8px;opacity:0.8;text-transform:uppercase;">Select a University</label>
+      <select id="fu" style="width:100%;padding:14px 16px;border:2px solid rgba(255,255,255,0.2);border-radius:10px;font-size:15px;box-sizing:border-box;background:rgba(255,255,255,0.15);color:white;outline:none;">
+        <option value="">Choose a university...</option>
+      </select>
+    </div>
+  </div>
+  <button onclick="runFinder()" style="background:#e74c3c;color:white;border:none;padding:14px 36px;border-radius:10px;font-size:16px;font-weight:700;cursor:pointer;">Check Affordability</button>
+  <div id="finder-result" style="margin-top:28px;display:none;"></div>
 </div>
 
 <script>
-const COLLEGE_DATA = ', college_json, ';
-const STATE_DATA = ', state_json, ';
-const UMN_RENT = ', umn_rent, ';
-
-const collegeSelect = document.getElementById("go-college");
-Object.keys(COLLEGE_DATA).sort().forEach(college => {
-const opt = document.createElement("option");
-opt.value = college;
-opt.textContent = college;
-collegeSelect.appendChild(opt);
+document.addEventListener("DOMContentLoaded", function() {
+  const fuSel = document.getElementById("fu");
+  Object.keys(UD).sort().forEach(u => {
+    const o = document.createElement("option");
+    o.value = u; o.textContent = u + " (" + UD[u].state + ")";
+    fuSel.appendChild(o);
+  });
 });
-
-function burdenColor(ratio) {
-if (ratio < 30) return "#22c55e";
-if (ratio < 50) return "#f59e0b";
-return "#ef4444";
+function runFinder() {
+  const income = parseFloat(document.getElementById("fi").value);
+  const uni    = document.getElementById("fu").value;
+  const res    = document.getElementById("finder-result");
+  if (!income || income <= 0 || !uni) {
+    res.style.display = "block";
+    res.innerHTML = "<span style='color:#f39c12'>Please enter your income and select a university.</span>";
+    return;
+  }
+  const d     = UD[uni];
+  const ratio = parseFloat(((d.rent / income) * 100).toFixed(1));
+  const color = ratio < 30 ? "#27ae60" : ratio < 50 ? "#e67e22" : "#e74c3c";
+  const bg    = ratio < 30 ? "rgba(39,174,96,0.15)" : ratio < 50 ? "rgba(230,126,34,0.15)" : "rgba(231,76,60,0.15)";
+  let verdict;
+  if (ratio < 30) verdict = "You can afford to live near <strong>" + uni + "</strong>. At " + ratio + "% of your income on rent in " + d.state + ", you are below the affordability threshold.";
+  else if (ratio < 50) verdict = "Living near <strong>" + uni + "</strong> would be a stretch. In " + d.state + ", " + ratio + "% of your income would go to rent.";
+  else verdict = "Living near <strong>" + uni + "</strong> is financially unsustainable on your income. In " + d.state + ", " + ratio + "% would go to rent alone.";
+  const alts = Object.entries(UD)
+    .filter(([name, data]) => (data.rent / income) * 100 < 30 && name !== uni)
+    .map(([name, data]) => ({ name, state: data.state, ratio: parseFloat(((data.rent / income) * 100).toFixed(1)) }))
+    .sort((a, b) => a.ratio - b.ratio).slice(0, 5);
+  let altHTML = "";
+  if (ratio >= 30 && alts.length > 0) {
+    altHTML = "<div style='margin-top:20px;padding-top:20px;border-top:1px solid rgba(255,255,255,0.1);'><div style='font-size:0.9em;font-weight:700;margin-bottom:12px;opacity:0.8;'>Affordable universities on your income:</div>"
+      + alts.map(a => "<div style='display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:rgba(39,174,96,0.12);border-radius:8px;margin-bottom:6px;font-size:0.9em;'><span><strong>" + a.name + "</strong> <span style='opacity:0.6;'>(" + a.state + ")</span></span><span style='color:#27ae60;font-weight:800;'>" + a.ratio + "%</span></div>").join("") + "</div>";
+  } else if (ratio < 30) {
+    altHTML = "<div style='margin-top:12px;opacity:0.7;font-size:0.9em;'>You are in great shape. Your income works in this state.</div>";
+  } else {
+    altHTML = "<div style='margin-top:12px;opacity:0.6;font-size:0.9em;'>No universities in our list fall below 30% on your income. Consider states with lower rents like Wyoming or North Dakota.</div>";
+  }
+  res.style.display = "block";
+  res.innerHTML = "<div style='background:" + bg + ";border-radius:12px;padding:24px;'><div style='font-size:2.2em;font-weight:900;color:" + color + ";margin-bottom:8px;'>" + ratio + "% rent burden</div><div style='line-height:1.7;margin-bottom:10px;'>" + verdict + "</div><div style='font-size:0.82em;opacity:0.55;'>Based on median annual rent of $" + d.rent.toLocaleString() + " in " + d.state + " (ACS 2023)</div>" + altHTML + "</div>";
 }
-
-function burdenLabel(ratio) {
-if (ratio < 30) return "Affordable";
-if (ratio < 50) return "Stretch";
-return "Very hard";
-}
-
-function badgeHTML(ratio) {
-const color = burdenColor(ratio);
-return `<span class="go-badge" style="background:${color}; color:white;">${burdenLabel(ratio)}</span>`;
-}
-
-function movePill(ratio) {
-if (ratio < 30) return `<span class="go-pill" style="background:#22c55e;color:white;">Affordable</span>`;
-if (ratio < 50) return `<span class="go-pill" style="background:#f59e0b;color:white;">Stretch</span>`;
-return `<span class="go-pill" style="background:#ef4444;color:white;">Very hard</span>`;
-}
-
-function drawCollegeGauge(ratio) {
-const capped = Math.min(ratio, 60);
-const angle = (capped / 60) * 180;
-const rad = (angle - 180) * Math.PI / 180;
-const x = 100 + 78 * Math.cos(rad);
-const y = 100 + 78 * Math.sin(rad);
-const color = burdenColor(ratio);
-
-return `
-<svg width="220" height="130" viewBox="0 0 220 130">
-<path d="M 30 100 A 70 70 0 0 1 190 100"
-fill="none" stroke="#e5e7eb" stroke-width="16" stroke-linecap="round"/>
-<path d="M 30 100 A 70 70 0 0 1 190 100"
-fill="none" stroke="${color}" stroke-width="16" stroke-linecap="round"
-stroke-dasharray="${angle * 70 * Math.PI / 180} 1000"/>
-<line x1="110" y1="100" x2="${x + 10}" y2="${y}" stroke="#111827" stroke-width="3" stroke-linecap="round"/>
-<circle cx="110" cy="100" r="5" fill="#111827"/>
-<text x="110" y="70" text-anchor="middle" font-size="24" font-weight="900" fill="${color}">
-${ratio.toFixed(1)}%
-</text>
-<text x="30" y="118" font-size="10" fill="#9ca3af">0%</text>
-<text x="103" y="22" font-size="10" fill="#9ca3af">30%</text>
-<text x="178" y="118" font-size="10" fill="#9ca3af">60%</text>
-</svg>`;
-}
-
-function currency(x) {
-return "$" + Math.round(x).toLocaleString();
-}
-
-function runCollegeAffordabilityTool() {
-const income = parseFloat(document.getElementById("go-income").value);
-const college = document.getElementById("go-college").value;
-
-const results = document.getElementById("go-results");
-const verdict = document.getElementById("go-verdict");
-const details = document.getElementById("go-details");
-const compare = document.getElementById("go-compare");
-const gauge = document.getElementById("go-gauge");
-const badgeWrap = document.getElementById("go-badge-wrap");
-const incomeNeededBox = document.getElementById("go-income-needed");
-const rentShockBox = document.getElementById("go-rent-shock");
-
-if (!income || income <= 0 || !college) {
-results.style.display = "block";
-verdict.innerHTML = "<span style=\'color:#fbbf24;\'>Please enter your income and choose a college.</span>";
-details.innerHTML = "";
-compare.innerHTML = "";
-gauge.innerHTML = "";
-badgeWrap.innerHTML = "";
-incomeNeededBox.innerHTML = "";
-rentShockBox.innerHTML = "";
-return;
-}
-
-const info = COLLEGE_DATA[college];
-const yourRatio = (info.rent / income) * 100;
-const umnRatio = (UMN_RENT / income) * 100;
-const diff = yourRatio - umnRatio;
-const neededIncome = info.rent / 0.30;
-const incomeGap = Math.max(0, neededIncome - income);
-const shockRent = info.rent * 1.10;
-const shockRatio = (shockRent / income) * 100;
-
-let verdictText = "";
-if (yourRatio < 30) {
-verdictText = `If you chose <strong>${college}</strong>, about <strong>${yourRatio.toFixed(1)}%</strong> of your income would go to rent. That falls below the standard 30% affordability threshold.`;
-} else if (yourRatio < 50) {
-verdictText = `If you chose <strong>${college}</strong>, about <strong>${yourRatio.toFixed(1)}%</strong> of your income would go to rent. That means housing would take a large share of your budget.`;
-} else {
-verdictText = `If you chose <strong>${college}</strong>, about <strong>${yourRatio.toFixed(1)}%</strong> of your income would go to rent. That is a severe rent burden.`;
-}
-
-let compareText = "";
-if (diff > 0.2) {
-compareText = `If you went to <strong>${college}</strong> instead of <strong>University of Minnesota</strong>, your rent burden would jump from <strong>${umnRatio.toFixed(1)}%</strong> to <strong>${yourRatio.toFixed(1)}%</strong>.`;
-} else if (diff < -0.2) {
-compareText = `Compared with <strong>University of Minnesota</strong>, choosing <strong>${college}</strong> would lower your rent burden from <strong>${umnRatio.toFixed(1)}%</strong> to <strong>${yourRatio.toFixed(1)}%</strong>.`;
-} else {
-compareText = `<strong>${college}</strong> and <strong>University of Minnesota</strong> would create almost the same rent burden for your income: <strong>${yourRatio.toFixed(1)}%</strong> versus <strong>${umnRatio.toFixed(1)}%</strong>.`;
-}
-
-let incomeNeededText = "";
-if (incomeGap <= 0) {
-incomeNeededText = `At your current income, you already clear the affordability threshold here. To stay under 30%, you would need about <strong>${currency(neededIncome)}</strong>, and you are above that.`;
-} else {
-incomeNeededText = `To live in <strong>${info.state}</strong> without being cost-burdened, you would need about <strong>${currency(neededIncome)}</strong> per year. That is about <strong>${currency(incomeGap)}</strong> more than your current income.`;
-}
-
-let rentShockText = "";
-if (shockRatio < 30) {
-rentShockText = `If rent rose by 10%, your burden would become <strong>${shockRatio.toFixed(1)}%</strong>. You would still remain under the affordability line.`;
-} else if (shockRatio < 50) {
-rentShockText = `If rent rose by 10%, your burden would become <strong>${shockRatio.toFixed(1)}%</strong>. That would put more pressure on your budget.`;
-} else {
-rentShockText = `If rent rose by 10%, your burden would jump to <strong>${shockRatio.toFixed(1)}%</strong>. That would push this option into a very difficult range.`;
-}
-
-verdict.innerHTML = verdictText;
-details.innerHTML = `
-<strong>State:</strong> ${info.state}<br>
-<strong>Median annual rent in that state:</strong> ${currency(info.rent)}<br>
-<strong>Statewide under-25 burden:</strong> ${info.state_burden.toFixed(1)}%
-`;
-compare.innerHTML = compareText;
-gauge.innerHTML = drawCollegeGauge(yourRatio);
-badgeWrap.innerHTML = badgeHTML(yourRatio);
-incomeNeededBox.innerHTML = incomeNeededText;
-rentShockBox.innerHTML = rentShockText;
-results.style.display = "block";
-}
-
-function findAffordableAlternatives() {
-const income = parseFloat(document.getElementById("go-income").value);
-const selectedCollege = document.getElementById("go-college").value;
-const altWrap = document.getElementById("go-alt-results");
-const altGrid = document.getElementById("go-alt-grid");
-
-if (!income || income <= 0) {
-altWrap.style.display = "block";
-altGrid.innerHTML = `<div class="go-alt-card">Please enter your income first.</div>`;
-return;
-}
-
-const matches = Object.entries(COLLEGE_DATA)
-.map(([college, info]) => ({
-college: college,
-state: info.state,
-rent: info.rent,
-ratio: (info.rent / income) * 100
-}))
-.filter(d => d.college !== selectedCollege)
-.sort((a, b) => a.ratio - b.ratio)
-.slice(0, 5);
-
-altWrap.style.display = "block";
-
-altGrid.innerHTML = matches.map(d => `
-<div class="go-alt-card">
-<div class="go-alt-college">${d.college}</div>
-<div class="go-alt-state">${d.state}</div>
-<div class="go-alt-metric">
-<strong>Personal burden:</strong> ${d.ratio.toFixed(1)}%<br>
-<strong>Median annual rent:</strong> ${currency(d.rent)}<br>
-<strong>Category:</strong> ${burdenLabel(d.ratio)}
-</div>
-</div>
-`).join("");
-}
-
-function recommendStates() {
-const income = parseFloat(document.getElementById("go-income").value);
-const moveWrap = document.getElementById("go-move-results");
-const moveGrid = document.getElementById("go-move-grid");
-
-if (!income || income <= 0) {
-moveWrap.style.display = "block";
-moveGrid.innerHTML = `<div class="go-alt-card">Enter your income first to see the best states for you.</div>`;
-return;
-}
-
-const ranked = STATE_DATA
-.map(d => ({
-state: d.state,
-rent: d.rent,
-ratio: (d.rent / income) * 100
-}))
-.sort((a, b) => a.ratio - b.ratio)
-.slice(0, 5);
-
-moveWrap.style.display = "block";
-moveGrid.innerHTML = ranked.map(d => `
-<div class="go-alt-card">
-<div class="go-alt-college">${d.state}</div>
-<div class="go-alt-metric">
-<strong>Your burden:</strong> ${d.ratio.toFixed(1)}%<br>
-<strong>Median annual rent:</strong> ${currency(d.rent)}<br>
-${movePill(d.ratio)}
-</div>
-</div>
-`).join("");
-}
-</script>'
-))
+</script>
 ```
 
+<div class="section-title">State vs State</div>
+<div class="section-subtitle">Pick any two states and see a head to head breakdown of rent burden, income, and rent.</div>
 
+```{r}
+#| label: vs-data
+#| echo: false
+#| results: asis
 
-<div class="section-title">All 50 States Ranked</div>
+vs_json <- paste0(
+  "{",
+  paste0(
+    '"', burden_2023$State, '":{',
+    '"rent":', round(burden_2023$median_rent_annual, 0), ',',
+    '"income":', round(burden_2023$income_under25, 0), ',',
+    '"burden":', round(burden_2023$burden_under25, 1), ',',
+    '"cat":"', burden_2023$burden_cat_under25, '"',
+    '}',
+    collapse = ","
+  ),
+  "}"
+)
+
+cat('<script>const VSD =', vs_json, ';</script>')
+```
+
+```{=html}
+<div class="vs-container">
+  <div class="vs-title">State vs State Battle</div>
+  <div class="vs-subtitle">Which state is actually better for a young renter on your income?</div>
+  <div class="vs-inputs">
+    <div class="vs-input-group">
+      <label>State A</label>
+      <select id="vsa"><option value="">Choose state A...</option></select>
+    </div>
+    <div class="vs-divider">vs</div>
+    <div class="vs-input-group">
+      <label>State B</label>
+      <select id="vsb"><option value="">Choose state B...</option></select>
+    </div>
+    <button class="vs-btn" onclick="runVS()">Compare</button>
+  </div>
+  <div class="vs-result" id="vs-result">
+    <div class="vs-cards">
+      <div class="vs-card" id="vs-card-a"></div>
+      <div class="vs-middle"><div class="vs-vs">vs</div><div class="vs-winner-tag" id="vs-winner-tag"></div></div>
+      <div class="vs-card" id="vs-card-b"></div>
+    </div>
+    <div class="vs-verdict" id="vs-verdict"></div>
+  </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  const vsaSel = document.getElementById("vsa");
+  const vsbSel = document.getElementById("vsb");
+  Object.keys(VSD).sort().forEach(s => {
+    [vsaSel, vsbSel].forEach(sel => {
+      const o = document.createElement("option");
+      o.value = s; o.textContent = s; sel.appendChild(o);
+    });
+  });
+});
+
+function vsColor(b) { return b < 30 ? "#27ae60" : b < 50 ? "#e67e22" : "#e74c3c"; }
+function vsBadgeBg(b) { return b < 30 ? "rgba(39,174,96,0.2)" : b < 50 ? "rgba(230,126,34,0.2)" : "rgba(231,76,60,0.2)"; }
+
+function runVS() {
+  const sa = document.getElementById("vsa").value;
+  const sb = document.getElementById("vsb").value;
+  const res = document.getElementById("vs-result");
+  if (!sa || !sb || sa === sb) {
+    res.style.display = "block";
+    document.getElementById("vs-card-a").innerHTML = "<div style='color:#f39c12;'>Please select two different states.</div>";
+    document.getElementById("vs-card-b").innerHTML = "";
+    document.getElementById("vs-verdict").innerHTML = "";
+    document.getElementById("vs-winner-tag").textContent = "";
+    return;
+  }
+  const a = VSD[sa];
+  const b = VSD[sb];
+  const aWins = a.burden < b.burden;
+  const colA = vsColor(a.burden);
+  const colB = vsColor(b.burden);
+
+  function cardHTML(state, d, wins) {
+    return "<div class='vs-state-name'>" + state + "</div>"
+      + "<div class='vs-big-pct' style='color:" + vsColor(d.burden) + ";'>" + d.burden + "%</div>"
+      + "<div class='vs-pct-label'>rent burden for under-25</div>"
+      + "<div class='vs-metric'>"
+      + "<strong>Annual Rent:</strong> $" + d.rent.toLocaleString() + "<br>"
+      + "<strong>Under-25 Income:</strong> $" + d.income.toLocaleString() + "<br>"
+      + "<strong>Category:</strong> " + d.cat
+      + "</div>"
+      + "<div class='vs-badge' style='background:" + vsBadgeBg(d.burden) + ";color:" + vsColor(d.burden) + ";'>" + d.cat + "</div>";
+  }
+
+  document.getElementById("vs-card-a").className = "vs-card " + (aWins ? "winner" : "loser");
+  document.getElementById("vs-card-b").className = "vs-card " + (!aWins ? "winner" : "loser");
+  document.getElementById("vs-card-a").innerHTML = cardHTML(sa, a, aWins);
+  document.getElementById("vs-card-b").innerHTML = cardHTML(sb, b, !aWins);
+  document.getElementById("vs-winner-tag").textContent = (aWins ? sa : sb) + " wins";
+
+  const winner = aWins ? sa : sb;
+  const loser  = aWins ? sb : sa;
+  const wd = aWins ? a : b;
+  const ld = aWins ? b : a;
+  const diff = Math.abs(a.burden - b.burden).toFixed(1);
+
+  document.getElementById("vs-verdict").innerHTML =
+    "<strong>" + winner + "</strong> is the more affordable state for young renters, with a " + wd.burden + "% burden compared to " + ld.burden + "% in <strong>" + loser + "</strong>. "
+    + "That is a difference of " + diff + " percentage points. "
+    + "Annual rent in " + winner + " is $" + wd.rent.toLocaleString() + " versus $" + ld.rent.toLocaleString() + " in " + loser + ".";
+
+  res.style.display = "block";
+}
+</script>
+```
+
+<div class="section-title">All 51 States Ranked</div>
 <div class="section-subtitle">Hover any bar for full details. Sorted from most to least burdened.</div>
 
 ```{r}
@@ -1360,23 +1111,12 @@ ${movePill(d.ratio)}
 #| warning: false
 #| fig-height: 14
 
-COLORS <- c(
-  "Affordable"        = "#27ae60",
-  "Burdened"          = "#e67e22",
-  "Severely Burdened" = "#c0392b"
-)
+COLORS <- c("Affordable" = "#27ae60", "Burdened" = "#e67e22", "Severely Burdened" = "#c0392b")
 
 p5 <- ggplot(burden_2023,
-  aes(x = fct_reorder(State, burden_under25),
-      y = burden_under25,
+  aes(x = fct_reorder(State, burden_under25), y = burden_under25,
       fill = burden_cat_under25,
-      text = paste0(
-        "<b>", State, "</b><br>",
-        "Burden: ", round(burden_under25, 1), "%<br>",
-        "Category: ", burden_cat_under25, "<br>",
-        "Annual Rent: $", format(round(median_rent_annual), big.mark = ","), "<br>",
-        "Income (Under 25): $", format(round(income_under25), big.mark = ",")
-      ))) +
+      text = paste0("<b>", State, "</b><br>Burden: ", round(burden_under25, 1), "%<br>Category: ", burden_cat_under25, "<br>Annual Rent: $", format(round(median_rent_annual), big.mark = ","), "<br>Income (Under 25): $", format(round(income_under25), big.mark = ",")))) +
   geom_col(width = 0.75, alpha = 0.90) +
   geom_hline(yintercept = 30, linetype = "dashed", color = "#1a1a2e", linewidth = 0.7, alpha = 0.6) +
   geom_hline(yintercept = 50, linetype = "dashed", color = "#c0392b", linewidth = 0.7, alpha = 0.6) +
@@ -1385,41 +1125,46 @@ p5 <- ggplot(burden_2023,
   scale_y_continuous(labels = label_percent(scale = 1)) +
   labs(x = NULL, y = "Rent Burden Ratio (%)") +
   theme_minimal(base_size = 11) +
-  theme(axis.text.y = element_text(size = 8.5), legend.position = "top",
-        panel.grid.minor = element_blank())
+  theme(axis.text.y = element_text(size = 8.5), legend.position = "top", panel.grid.minor = element_blank())
 
 ggplotly(p5, tooltip = "text", height = 900) %>%
   layout(legend = list(orientation = "h", x = 0, y = 1.02),
-         font = list(family = "sans-serif"),
-         margin = list(l = 120))
+         font = list(family = "sans-serif"), margin = list(l = 120))
 ```
 
 ```{=html}
-<div class="section-title">What This Means</div>
-<div class="conclusion-grid">
-  <div class="conclusion-card">
-    <h4>College Choice Is a Housing Decision</h4>
-    <p>States with major university hubs like California, Florida, and New York are among the least affordable for young renters. Students in these states face housing costs that consume nearly half their income.</p>
+<div class="conclusion-section">
+  <h2>What This Means</h2>
+  <p class="sub">Four conclusions grounded entirely in the data.</p>
+  <div class="conclusion-grid">
+    <div class="conclusion-card" style="border-color:#e74c3c;">
+      <h4>College choice is a housing decision</h4>
+      <p>California (48.3%), Hawaii (47.8%), and Florida (44.1%) are three of the most popular college destinations in the U.S. and also three of the least affordable states for young renters. Where you go to school determines how much of your income disappears into rent.</p>
+    </div>
+    <div class="conclusion-card" style="border-color:#e67e22;">
+      <h4>The income gap is the real problem</h4>
+      <p>Young renters are not paying dramatically higher rents than older adults. They are paying similar rents on dramatically lower incomes. The 2x burden gap is entirely an income gap, not a rent gap. Rents are not the villain. Low entry-level wages are.</p>
+    </div>
+    <div class="conclusion-card" style="border-color:#27ae60;">
+      <h4>Affordable states are not accessible</h4>
+      <p>Wyoming (23.3%) and North Dakota (24.0%) offer the lowest burden ratios in the country. But they also have some of the fewest universities, least entry-level opportunity, and lowest population density. Affordability and access to education almost never appear in the same state.</p>
+    </div>
+    <div class="conclusion-card" style="border-color:#3498db;">
+      <h4>This gap will not resolve itself</h4>
+      <p>The burden peaks during the exact years when young people are making foundational decisions about college, careers, and cities. Every under-25 renter making housing decisions today is navigating a system that was not designed with their income in mind.</p>
+    </div>
   </div>
-  <div class="conclusion-card">
-    <h4>The Income Gap Is the Real Problem</h4>
-    <p>Young renters are not paying dramatically higher rents than older adults. They are paying similar rents on dramatically lower incomes. High burden comes from low income, not unusually high rent.</p>
-  </div>
-  <div class="conclusion-card">
-    <h4>Rural States Are Affordable But Less Accessible</h4>
-    <p>Wyoming, North Dakota, and Arkansas show the lowest burden ratios. But these states also have fewer universities, fewer entry-level jobs, and fewer opportunities for young graduates.</p>
-  </div>
-  <div class="conclusion-card">
-    <h4>This Gap Will Not Fix Itself</h4>
-    <p>The burden gap hits hardest during the years when people are building careers and finishing school. Every under-25 renter today is making decisions whose financial consequences last decades.</p>
+  <div class="final-statement">
+    In 2023, <strong>34 out of 51 states</strong> cost-burdened young renters. <strong>Zero</strong> did the same to established adults. The data does not describe a housing crisis that affects everyone equally. It describes a generational fault line, where the same economy that works for adults aged 25 to 44 systematically fails adults under 25. That is not a coincidence. It is a structural condition.
   </div>
 </div>
 
 <div style="background:#f8f9fa;border-radius:16px;padding:24px;margin:30px 0;font-size:0.85em;color:#666;line-height:1.8;">
   <strong style="color:#1a1a2e;">Data Sources</strong><br>
-  Income by Age: U.S. Census Bureau ACS 1-Year Estimates Table B19049 (2015-2023, excluding 2020)<br>
+  Income by Age of Householder: U.S. Census Bureau ACS 1-Year Estimates Table B19049 (2015-2023, excluding 2020)<br>
   Median Gross Rent: U.S. Census Bureau ACS 1-Year Estimates Table B25064 (2015-2023, excluding 2020)<br>
-  Historical Income: U.S. Census Bureau CPS Historical Income Table H-8 (1984-2024)<br>
-  Data via tidycensus R package. Puerto Rico excluded. 2020 ACS not released due to COVID-19.
+  Historical Household Income: U.S. Census Bureau CPS Historical Income Table H-8 (1984-2024)<br>
+  Data accessed via tidycensus R package. Puerto Rico excluded. 2020 ACS 1-year estimates not released due to COVID-19 collection disruptions.<br>
+  Analysis: Elma M., Jack D., Thusa. COMP/STAT 212, Macalester College, Spring 2026.
 </div>
 ```
