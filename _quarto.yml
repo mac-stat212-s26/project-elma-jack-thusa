@@ -5,7 +5,6 @@ project:
 number-depth: 2
 
 book:
-  title: "Rent & Roster"
   author: ["Elma M.", "Jack D.", "Thusa"]
   date: today
   date-format: full
