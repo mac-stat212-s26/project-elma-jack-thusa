@@ -39,16 +39,16 @@ featuring:
 **Below are some images that show the tools that have been developed
 from this project**
 
--   [*Interactive Leaflet Map*]{.underline}
+-   Interactive Leaflet Map
 
     ![](images/Screenshot%202026-05-07%20at%204.00.38%20PM.png)
 
--   [*Student Housing Affordability Calculator & College Burden
-    Calculator*]{.underline}
+-   Student Housing Affordability Calculator & College Burden
+    Calculator
 
     ![](images/Screenshot%202026-05-07%20at%204.00.18%20PM.png)
 
--   [*State Comparison & Rent Burden Time Machine*]{.underline}
+-   State Comparison & Rent Burden Time Machine
 
     ![](images/Screenshot%202026-05-07%20at%204.00.01%20PM.png)
 
