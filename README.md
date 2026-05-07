@@ -26,24 +26,26 @@ The final deliverable is a fully interactive **Quarto HTML report** featuring:
 
 -   Interactive Leaflet Map
 
-    ![](images/map.png)
+    ![](images/map.png){width="594"}
 
 -   Student Housing Affordability Calculator & College Burden Calculator
 
-    ![](images/Calculator.png)
+    ![](images/Calculator.png){width="595"}
 
--   State Comparison & Rent Burden Time Machine
+-   State Comparison & Rent Burden Time Machine\
 
-    ![](images/comp.png)
+    ![](images/comp.png){width="589"}
+
+
 
 ------------------------------------------------------------------------
 
-## Software Requirements
+##  Software Requirements
 
 To run the code in this repository, you will need the following installed on your machine:
 
 | Software | Minimum Version | Notes |
-|----|----|----|
+|------------------------|------------------------|------------------------|
 | **R** | 4.3.0+ | [Download from CRAN](https://cran.r-project.org/) |
 | **RStudio** | 2024.04.0+ | [Download from Posit](https://posit.co/download/rstudio-desktop/) |
 | **Quarto** | 1.4.0+ | Bundled with recent RStudio; verify with `quarto --version` |
@@ -108,7 +110,7 @@ install.packages(c(
 All data used in this project comes from publicly available U.S. government sources:
 
 | Dataset | Source | Table / Identifier | Years |
-|----|----|----|----|
+|------------------|------------------|------------------|------------------|
 | **Income by Age** | U.S. Census Bureau ACS 1-Year Estimates | Table B19049 | 2015–2023 (excl. 2020) |
 | **Median Gross Rent** | U.S. Census Bureau ACS 1-Year Estimates | Table B25064 | 2015–2023 (excl. 2020) |
 | **Historical Income** | U.S. Census Bureau Current Population Survey (CPS) | Historical Income Table H-8 | 1984–2024 |
