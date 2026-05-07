@@ -1,9 +1,3 @@
----
-editor: 
-  markdown: 
-    wrap: 72
----
-
 # Rent & Roster: Student Housing Affordability in the U.S.
 
 \> **Can college-age renters actually afford to live in the U.S.?** \>
@@ -45,16 +39,16 @@ featuring:
 **Below are some images that show the tools that have been developed
 from this project**
 
--   [*Interactive Leaflet Map*]{.underline}
+-   Interactive Leaflet Map
 
     ![](images/map.png)
 
--   [*Student Housing Affordability Calculator & College Burden
-    Calculator*]{.underline}
+-   Student Housing Affordability Calculator & College Burden
+    Calculator
 
     ![](images/Calc.png)
 
--   [*State Comparison & Rent Burden Time Machine*]{.underline}
+-   State Comparison & Rent Burden Time Machine
 
     ![](images/Comp.png)
 
