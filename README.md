@@ -47,16 +47,16 @@ from this project**
 
 -   [*Interactive Leaflet Map*]{.underline}
 
-    ![](images/Screenshot%202026-05-07%20at%204.00.38%20PM.png)
+    ![](images/map.png)
 
 -   [*Student Housing Affordability Calculator & College Burden
     Calculator*]{.underline}
 
-    ![](images/Screenshot%202026-05-07%20at%204.00.18%20PM.png)
+    ![](images/Calc.png)
 
 -   [*State Comparison & Rent Burden Time Machine*]{.underline}
 
-    ![](images/Screenshot%202026-05-07%20at%204.00.01%20PM.png)
+    ![](images/Comp.png)
 
 ------------------------------------------------------------------------
 
