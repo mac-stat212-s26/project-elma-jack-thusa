@@ -26,21 +26,19 @@ The final deliverable is a fully interactive **Quarto HTML report** featuring:
 
 -   Interactive Leaflet Map
 
-    ![](images/map.png){width="594"}
+    ![](images/map.png)
 
 -   Student Housing Affordability Calculator & College Burden Calculator
 
-    ![](images/Calculator.png){width="595"}
+    ![](images/Calculator.png)
 
--   State Comparison & Rent Burden Time Machine\
+-   State Comparison & Rent Burden Time Machine
 
-    ![](images/comp.png){width="589"}
-
-
+    ![](images/comp.png)
 
 ------------------------------------------------------------------------
 
-##  Software Requirements
+## Software Requirements
 
 To run the code in this repository, you will need the following installed on your machine:
 
