@@ -1,9 +1,3 @@
----
-editor: 
-  markdown: 
-    wrap: 72
----
-
 # Rent & Roster: Student Housing Affordability in the U.S.
 
 \> **Can college-age renters actually afford to live in the U.S.?** \>
