@@ -103,6 +103,30 @@ install.packages(c(
 
 5.  **View the site** — open `docs/index.html` in your browser, or visit the live site at `mac-stat212-s26.github.io/project-elma-jack-thusa`
 
+# Project Presentation
+
+## Video Walkthrough
+
+<iframe 
+  src="https://drive.google.com/file/d/1spUXiJhrCFcAY6OXwdn0drzGiqcFN6VY/preview" 
+  width="640" 
+  height="480" 
+  frameborder="0" 
+  allowfullscreen="true">
+</iframe>
+
+## Slide Deck
+
+<iframe 
+  src="https://docs.google.com/presentation/d/e/2PACX-1vQr6bO1rxj-EqCO2RxK4U17AogTZhg5NbHd62RRe-tAUuz6L3-h5cphfJWSOhDvqF9D54xpzzYsmvZ7/embed?start=false&loop=false&delayms=3000" 
+  width="960" 
+  height="569" 
+  frameborder="0" 
+  allowfullscreen="true">
+</iframe>
+
+
+
 ## Data Sources & References
 
 All data used in this project comes from publicly available U.S. government sources:

@@ -4,9 +4,13 @@ All results live in this folder.
 
 ## Video Walkthrough
 
-<video width="640" height="360" controls>
-  <source src="images/VideoCompressed.mp4" type="video/mp4">
-</video>
+<iframe 
+  src="https://drive.google.com/file/d/1spUXiJhrCFcAY6OXwdn0drzGiqcFN6VY/preview" 
+  width="640" 
+  height="480" 
+  frameborder="0" 
+  allowfullscreen="true">
+</iframe>
 
 ## Slide Deck
 
