@@ -1,5 +1,78 @@
 ---
-title: "Case Study"
+title: "Case Study: How The Pudding Tells a Data Story"
+author: "Elma Mostic, Jack Dong, and Providence (Thusa) Thusabantu"
+date: "2026-03-26"
+format:
+  html:
+    toc: true
+    toc-depth: 2
+    number-sections: true
 ---
 
-Your case study go here.
+## Overview
+
+For this case study, we looked at *"Someone Clever Once Said Women Were Not  Allowed Pockets"* by Jan Diehm and Amber Thomas, published on [The Pudding](https://pudding.cool/2018/08/pockets/) in August 2018. The piece asks a simple question most women already know the answer to: are the pockets in women's jeans actually smaller than men's, and by how much?
+
+We chose this report because it does exactly what we want *Rent & Roster* to do: it takes something people already feel in their everyday lives and backs it up with real data in a way that's easy to understand and hard to ignore.
+
+---
+
+## How the Story Is Structured
+
+### 1. It starts with a relatable moment
+
+The story doesn't open with statistics. It opens with the authors standing on a street in New York City, bags in hand, watching their male coworkers walk to dinner unburdened because their pockets actually work. It's a small moment, but it immediately makes you think: *yeah, that happens to me too.*
+
+We want *Rent & Roster* to open the same way: with the feeling of scrolling through Zillow as a student and realizing nothing is affordable, before we ever show a single chart.
+
+### 2. The research question is specific and answerable
+
+Instead of asking "why are women's pockets so bad?", the authors reframe it as something they can actually measure: how much smaller are women's pockets, and are they functional at all? That shift from a vague complaint to a concrete, data-driven question is what makes the story work.
+
+We tried to do the same thing with our research questions. Instead of asking "is housing unaffordable for students?", we ask: what is the rent-to-income burden ratio by state, and how many states fall into the severely burdened category for 18 to 24 year-olds?
+
+### 3. They're upfront about how they got their data
+
+There was no existing dataset for pocket sizes, so the authors went to stores in Nashville, New York, and Seattle and measured 80 pairs of jeans from 20 brands themselves. They explain exactly what they measured, how they controlled for size (all jeans had a 32-inch waistband), and where the data came from.
+
+That kind of transparency is something we want to bring to our project too. We plan to clearly explain how we downloaded and cleaned the Zillow and Census data, what years we're using, and how we calculate our burden ratios.
+
+### 4. Visuals come first, numbers come second
+
+The findings are shown through scroll-driven animations. You see all 80 pocket outlines before you read a single stat. Only after the visual sinks in do the numbers appear:
+
+- Women's pockets are on average 48% shorter and 6.5% narrower than men's
+- Only 40% of women's front pockets can fit one of the top three smartphones
+- Most women's pockets can't even fit a hand past the knuckles
+
+This approach makes the story accessible to anyone, not just people who are comfortable reading data tables. Our plan is to lead with the choropleth map of burden by state before diving into the numbers behind it.
+
+### 5. It connects the data to something bigger
+
+The story doesn't end with measurements. It zooms out to show why pocket size actually matters: how limiting private space has historically been used to limit women's freedom and mobility. The data stops being just an interesting finding and becomes evidence of something real.
+
+That's the move we want to make in our conclusions too. We want to connect rent burden ratios to what they actually mean for students: financial stress, limited college choices, and widening opportunity gaps by state.
+
+---
+
+## What We're Taking From This
+
+| Element | What The Pudding Did | What We'll Do |
+|---|---|---|
+| **Hook** | Personal story before any data | Open with the student housing search experience |
+| **Research question** | Vague complaint to measurable hypothesis | Specific burden thresholds (30%, 50%) |
+| **Data transparency** | Documented every methodological choice | Document our Zillow/Census merge clearly |
+| **Visualization** | Show first, quantify second | Choropleth map before tables |
+| **Big picture** | Data as evidence of systemic inequality | Burden ratios as evidence of student opportunity gaps |
+
+---
+
+## References
+
+- Diehm, J., & Thomas, A. (2018). *Someone clever once said women were not allowed pockets*. The Pudding. <https://pudding.cool/2018/08/pockets/>
+
+- Thomas, A. (n.d.). *Continue, pivot, or put it down*. The Pudding. 
+  <https://pudding.cool/process/pivot-continue-down/>
+
+- FlowingData. (2018, August 16). *A visual analysis of jean pockets and their lack of practicality*. 
+  <https://flowingdata.com/2018/08/16/a-visual-analysis-of-jean-pockets/>

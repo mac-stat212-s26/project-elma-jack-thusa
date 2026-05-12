@@ -1,5 +1,91 @@
 ---
-title: "Member 3 First Name & Last Name Initial"
+title: "Jack D."
 ---
 
-Your exploratory data analysis of the team datasets go here.
+I explored the Median Household Income by State from Historical Income Tables: Households from United States Census Bureau.
+Some data wrangling first.
+```{r}
+library(readr)
+library(dplyr)
+library(janitor)
+library(DataExplorer)
+# Read file as raw, without automatic headers
+raw_data <- read_csv(
+  "../data/raw/Median Household Income by State 1984 to 2024.csv",
+  skip = 7,
+  col_names = FALSE,
+  show_col_types = FALSE
+)
+
+# We keep the messy first rows because we need them to identify the real headers.
+
+# Check the first few rows
+raw_data[1:4, 1:12]
+```
+\
+```{r}
+# Extract the first two rows
+year_row <- as.character(unlist(raw_data[1, ]))
+type_row <- as.character(unlist(raw_data[2, ]))
+```
+\
+```{r}
+# Find the state column
+state_col <- 1
+
+# Find only the columns labeled "Median income"
+median_cols <- which(type_row == "Median income")
+
+# Keep State + median income columns only
+Household_median <- raw_data[-c(1, 2), c(state_col, median_cols)]
+```
+\
+```{r}
+# Rename columns
+income_years <- year_row[median_cols]
+colnames(Household_median) <- c("State", income_years)
+```
+\
+```{r}
+Household_median <- Household_median %>%
+  mutate(
+    across(-State, ~ as.numeric(gsub(",", "", .)))
+  )
+
+```
+```{r}
+Household_median$State[1] <- "United States (Median average)"
+
+Household_median <- Household_median[1:52, ]
+Household_median <- Household_median %>%
+  select(-matches("\\((39|40)\\)$"))
+colnames(Household_median) <- gsub("\\s*\\(.*\\)", "", colnames(Household_median))
+head(Household_median)
+```
+
+
+The actual EDA begins below.
+
+```{r}
+Household_median %>%
+  summarise(across(where(is.numeric), list(
+    mean = mean,
+    median = median,
+    min = min,
+    max = max
+  ), na.rm = TRUE))
+```
+
+```{r}
+introduce(Household_median)
+```
+
+```{r}
+# Remove State column for numeric analysis
+numeric_df <- Household_median[, -1]
+
+plot_histogram(numeric_df)
+
+```
+
+
